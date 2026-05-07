@@ -1,0 +1,34 @@
+node_modules/
+.next/
+dist/
+build/
+out/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# sqlite
+*.db
+*.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+
+# uploaded assets (volume mount target)
+storage/
+uploads/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# os
+.DS_Store
+Thumbs.db
+
+# editor
+.vscode/
+.idea/
