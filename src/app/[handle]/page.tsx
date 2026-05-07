@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { PublicCard } from "@/app/[handle]/PublicCard";
@@ -22,10 +21,7 @@ export default async function Page({
   params,
 }: {
   params: Promise<{ handle: string }>;
-}) {
-  const cookieStore = await cookies();
-  void cookieStore;
-  const { handle: raw } = await params;
+}) {  const { handle: raw } = await params;
   const normalized = normalizeHandle(raw);
   if (!normalized) {
     notFound();

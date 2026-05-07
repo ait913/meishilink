@@ -9,7 +9,7 @@ export const prisma =
   });
 
 if (!globalForPrisma.prisma) {
-  prisma.$queryRawUnsafe("PRAGMA journal_mode=WAL").catch(() => {});
+  prisma.$queryRawUnsafe<unknown[]>("PRAGMA journal_mode=WAL").catch(() => {});
   globalForPrisma.prisma = prisma;
 }
 

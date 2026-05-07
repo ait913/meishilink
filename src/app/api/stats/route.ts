@@ -1,13 +1,9 @@
-import { cookies } from "next/headers";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getStatsForCard } from "@/lib/stats";
 
-export async function GET(): Promise<Response> {
-  const cookieStore = await cookies();
-  void cookieStore;
-  const session = await auth();
+export async function GET(): Promise<Response> {  const session = await auth();
   if (!session?.user?.id) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }

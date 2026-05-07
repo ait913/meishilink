@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { permanentRedirect } from "next/navigation";
 
 import { normalizeHandle } from "@/lib/handle";
@@ -8,10 +7,7 @@ import { buildVcard } from "@/lib/vcard";
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ handle: string }> },
-): Promise<Response> {
-  const cookieStore = await cookies();
-  void cookieStore;
-  const { handle: raw } = await params;
+): Promise<Response> {  const { handle: raw } = await params;
   const normalized = normalizeHandle(raw);
   if (!normalized) {
     return new Response("Not Found", { status: 404 });

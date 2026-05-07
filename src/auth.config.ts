@@ -28,5 +28,18 @@ export const authConfig = {
       }
       return true;
     },
+    jwt({ token, user }) {
+      if (user) {
+        (token as Record<string, unknown>).id = (user as { id?: string }).id ?? token.sub;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      const id = (token as Record<string, unknown>).id ?? token.sub;
+      if (session.user && id) {
+        (session.user as { id?: string }).id = id as string;
+      }
+      return session;
+    },
   },
 } satisfies NextAuthConfig;

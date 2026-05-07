@@ -1,12 +1,8 @@
-import { cookies } from "next/headers";
 
 import { isReservedHandle, isValidHandle, normalizeHandle } from "@/lib/handle";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: Request): Promise<Response> {
-  const cookieStore = await cookies();
-  void cookieStore;
-  const url = new URL(req.url);
+export async function GET(req: Request): Promise<Response> {  const url = new URL(req.url);
   const input = url.searchParams.get("h");
   if (!input) {
     return Response.json({ error: "missing h" }, { status: 400 });

@@ -1,8 +1,6 @@
 import { readFile } from "fs/promises";
 import path from "path";
 
-import { cookies } from "next/headers";
-
 import { getUploadDir } from "@/lib/upload";
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -16,12 +14,11 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ path: string[] }> },
 ): Promise<Response> {
-  const cookieStore = await cookies();
-  void cookieStore;
   const { path: segments } = await params;
-  const root = getUploadDir();
+  const root = path.resolve(getUploadDir());
   const target = path.resolve(root, ...segments);
-  if (!target.startsWith(root)) {
+  const rel = path.relative(root, target);
+  if (rel.startsWith("..") || path.isAbsolute(rel)) {
     return new Response("Not Found", { status: 404 });
   }
 

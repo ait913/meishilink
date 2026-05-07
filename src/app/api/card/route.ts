@@ -1,5 +1,4 @@
 import { Prisma } from "@prisma/client";
-import { cookies } from "next/headers";
 
 import { auth } from "@/auth";
 import { isReservedHandle, isValidHandle, normalizeHandle } from "@/lib/handle";
@@ -32,10 +31,7 @@ function sanitizeInput(input: Record<string, unknown>) {
   };
 }
 
-export async function POST(req: Request): Promise<Response> {
-  const cookieStore = await cookies();
-  void cookieStore;
-  const session = await auth();
+export async function POST(req: Request): Promise<Response> {  const session = await auth();
   if (!session?.user?.id) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
@@ -82,10 +78,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 }
 
-export async function PUT(req: Request): Promise<Response> {
-  const cookieStore = await cookies();
-  void cookieStore;
-  const session = await auth();
+export async function PUT(req: Request): Promise<Response> {  const session = await auth();
   if (!session?.user?.id) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }

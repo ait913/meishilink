@@ -1,21 +1,18 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { auth, signIn } from "@/auth";
 
-export default async function LoginPage() {
-  const cookieStore = await cookies();
-  void cookieStore;
-  const session = await auth();
+export default async function LoginPage() {  const session = await auth();
   if (session?.user) {
     redirect("/dashboard");
   }
 
   const googleEnabled = Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET);
-  const testMode = process.env.AUTH_TEST_MODE === "true";
+  const testMode =
+    process.env.AUTH_TEST_MODE === "true" && process.env.NODE_ENV !== "production";
 
   async function signInWithEmail(formData: FormData) {
     "use server";

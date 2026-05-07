@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
@@ -20,10 +19,7 @@ function parseSnsLinks(value: string | null) {
   }
 }
 
-export default async function TemplatesPage() {
-  const cookieStore = await cookies();
-  void cookieStore;
-  const session = await auth();
+export default async function TemplatesPage() {  const session = await auth();
   if (!session?.user?.id) {
     redirect("/login");
   }

@@ -1,13 +1,9 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 
 import { MeishiLogo } from "@/components/icons/MeishiLogo";
 import { auth } from "@/auth";
 
-export default async function Page() {
-  const cookieStore = await cookies();
-  void cookieStore;
-  const session = await auth();
+export default async function Page() {  const session = await auth();
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-10">

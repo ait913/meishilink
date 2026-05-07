@@ -6,11 +6,12 @@ import Nodemailer from "next-auth/providers/nodemailer";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/auth.config";
 
-const isTestMode = process.env.AUTH_TEST_MODE === "true";
+const isTestMode =
+  process.env.AUTH_TEST_MODE === "true" && process.env.NODE_ENV !== "production";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "database" },
+  session: { strategy: "jwt" },
   ...authConfig,
   providers: [
     ...authConfig.providers,

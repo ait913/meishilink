@@ -1,11 +1,6 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 
-export default async function VerifyRequestPage() {
-  const cookieStore = await cookies();
-  void cookieStore;
-
-  return (
+export default async function VerifyRequestPage() {  return (
     <main className="mx-auto flex min-h-screen w-full max-w-lg items-center px-6 py-12">
       <div className="w-full rounded-[2rem] border border-white/70 bg-white/85 p-8 shadow-xl shadow-neutral-200/70 backdrop-blur">
         <p className="text-sm text-neutral-500">メールを送信しました</p>

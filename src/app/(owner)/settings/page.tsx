@@ -1,14 +1,10 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { auth, signOut } from "@/auth";
 import { deleteAccountAction } from "@/app/(owner)/dashboard/actions";
 import { Button } from "@/components/ui/Button";
 
-export default async function SettingsPage() {
-  const cookieStore = await cookies();
-  void cookieStore;
-  const session = await auth();
+export default async function SettingsPage() {  const session = await auth();
   if (!session?.user?.id) {
     redirect("/login");
   }

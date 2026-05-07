@@ -1,17 +1,16 @@
-import { headers, cookies } from "next/headers";
+import { headers } from "next/headers";
 
 import { classifyUA, getCountry } from "@/lib/log";
+import { normalizeHandle } from "@/lib/handle";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request): Promise<Response> {
-  const cookieStore = await cookies();
-  void cookieStore;
   const headerList = await headers();
   const payload = (await req.json().catch(() => ({ handle: "" }))) as { handle?: string };
-  const handle = String(payload.handle ?? "");
+  const handle = normalizeHandle(String(payload.handle ?? ""));
 
-  const card = await prisma.card.findUnique({
-    where: { handle },
+  const card = await prisma.card.findFirst({
+    where: { handle, isPublished: true },
     select: { id: true },
   });
   if (!card) {
