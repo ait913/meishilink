@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: file:/app/data/prod.db
+      AUTH_URL: http://localhost:3000
+      AUTH_TRUST_HOST: "true"
+      AUTH_SECRET: ${AUTH_SECRET}
+      PUBLIC_BASE_URL: http://localhost:3000
+      UPLOAD_DIR: /app/storage/uploads
+      AUTH_TEST_MODE: "false"
+    volumes:
+      - meishi-data:/app/data
+      - meishi-storage:/app/storage
+
+volumes:
+  meishi-data:
+  meishi-storage:
+
