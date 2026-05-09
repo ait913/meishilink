@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { OnboardingForm } from "@/app/(owner)/onboarding/OnboardingForm";
+
+export const metadata: Metadata = {
+  title: "はじめての名刺登録",
+  robots: { index: false, follow: false },
+};
 
 export default async function OnboardingPage() {  const session = await auth();
   if (!session?.user?.id) {
