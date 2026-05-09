@@ -29,6 +29,9 @@ export function SavedClient() {
 
   return (
     <section className="space-y-6">
+      <Link className="inline-flex items-center text-xs text-neutral-500 hover:text-neutral-800" href="/">
+        ← MeishiLink ホーム
+      </Link>
       <div className="rounded-[2rem] border border-white/70 bg-white/85 p-6 shadow-lg shadow-neutral-200/60 backdrop-blur">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>

@@ -3,7 +3,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
 
-import { getFontStack, getTheme } from "@/lib/theme";
+import { getFontStack, getPalette, getTheme } from "@/lib/theme";
 import type { PublicCardViewModel } from "@/components/card/types";
 import { EngineerCard } from "@/components/card/EngineerCard";
 import { LetterpressCard } from "@/components/card/LetterpressCard";
@@ -22,9 +22,10 @@ export type PreviewProps = {
 
 export function CardPreview({ card, compact = false }: PreviewProps) {
   const theme = getTheme(card.themeKey);
+  const palette = getPalette(card.themeKey, card.paletteKey);
   const logo: ReactNode = card.logoPath ? (
     <div className="relative h-12 w-12 overflow-hidden rounded-full border border-white/30 bg-white/10">
-      <Image alt={`${card.lastName}${card.firstName} のロゴ`} className="object-cover" fill sizes="48px" src={card.logoPath} unoptimized />
+      <Image alt={card.fullName} className="object-cover" fill sizes="48px" src={card.logoPath} unoptimized />
     </div>
   ) : null;
 
@@ -33,11 +34,11 @@ export function CardPreview({ card, compact = false }: PreviewProps) {
     compact,
     logo,
     style: {
-      backgroundColor: theme.bg,
-      borderColor: theme.border,
-      color: theme.fg,
+      backgroundColor: palette.bg,
+      borderColor: palette.border,
+      color: palette.fg,
       fontFamily: getFontStack(card.fontKey),
-      "--accent": card.accentColor || theme.accentDefault,
+      "--accent": card.accentColor || palette.accent,
     } as CSSProperties,
     theme,
   };

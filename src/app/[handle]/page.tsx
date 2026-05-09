@@ -4,7 +4,6 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { auth } from "@/auth";
 import { PublicCard } from "@/app/[handle]/PublicCard";
 import { ViewerActions } from "@/app/[handle]/ViewerActions";
-import { ViewerNav } from "@/components/ViewerNav";
 import { resolvePublicCard } from "@/lib/exchange-token";
 import { normalizeHandle } from "@/lib/handle";
 import { prisma } from "@/lib/prisma";
@@ -114,11 +113,11 @@ export default async function Page({
     : null;
   const isOwner = Boolean(owner && owner.id === card.userId);
 
+  const vcardHref = `/${card.handle}/vcard${token ? `?t=${encodeURIComponent(token)}` : ""}`;
+
   return (
-    <>
-      <ViewerNav isLoggedIn={isLoggedIn} isOwner={isOwner} />
-      <main className="mx-auto flex min-h-screen w-full max-w-3xl items-center px-6 py-10">
-        <div className="w-full space-y-6">
+    <main className="mx-auto flex min-h-screen w-full max-w-3xl items-center px-6 py-10">
+      <div className="w-full space-y-6">
         <PublicCard
           card={{
             ...card,
@@ -133,6 +132,8 @@ export default async function Page({
             email={card.email}
             fullName={fullName}
             handle={card.handle}
+            isLoggedIn={isLoggedIn}
+            isOwner={isOwner}
             jobTitle={card.jobTitle}
             logoUrl={card.logoPath}
             phone={card.phone}
@@ -141,11 +142,11 @@ export default async function Page({
             snsLinks={snsLinks}
             sourceUrl={publicUrl}
             themeKey={card.themeKey}
+            vcardHref={vcardHref}
             websiteUrl={card.websiteUrl}
           />
         </section>
       </div>
-      </main>
-    </>
+    </main>
   );
 }

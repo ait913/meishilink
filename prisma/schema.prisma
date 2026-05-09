@@ -74,6 +74,7 @@ model Card {
   profile       String?
   snsLinks      String?
   themeKey       String   @default("minimal")
+  paletteKey     String?
   fontKey        String   @default("sans")
   accentColor    String   @default("#111111")
   isPublished    Boolean  @default(true)

@@ -53,6 +53,7 @@ export async function updateCardAction(input: CardInput): Promise<
       profile: emptyToNull(parsed.data.profile),
       snsLinks: parsed.data.snsLinks && parsed.data.snsLinks.length > 0 ? JSON.stringify(parsed.data.snsLinks) : null,
       themeKey: parsed.data.themeKey,
+      paletteKey: emptyToNull(parsed.data.paletteKey),
       fontKey: parsed.data.fontKey,
       accentColor: parsed.data.accentColor,
       isPublished: parsed.data.isPublished,
