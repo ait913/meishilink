@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { Footer } from "@/components/Footer";
 import { MeishiLogo } from "@/components/icons/MeishiLogo";
 import { auth } from "@/auth";
 
@@ -83,6 +84,7 @@ const faqs = [
 export default async function Page() {
   const session = await auth();
   const startHref = session?.user ? "/dashboard" : "/login";
+  const operatorUrl = process.env.OPERATOR_INFO_URL ?? "";
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -284,10 +286,7 @@ export default async function Page() {
         </div>
       </section>
 
-      <footer className="mb-10 flex flex-col gap-2 text-xs text-neutral-500 md:flex-row md:justify-between">
-        <p>© {new Date().getFullYear()} MeishiLink</p>
-        <p>made for paper-card people</p>
-      </footer>
+      <Footer operatorUrl={operatorUrl} />
     </main>
   );
 }
