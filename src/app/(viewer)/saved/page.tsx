@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 
-import { auth } from "@/auth";
 import { SavedClient } from "@/app/(viewer)/saved/SavedClient";
-import { ViewerNav } from "@/components/ViewerNav";
 
 export const metadata: Metadata = {
   title: "保存した名刺",
@@ -11,15 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default async function SavedPage() {
-  const session = await auth();
-  const isLoggedIn = Boolean(session?.user);
-
   return (
-    <>
-      <ViewerNav isLoggedIn={isLoggedIn} isOwner={false} />
-      <main className="mx-auto w-full max-w-5xl px-6 py-10">
-        <SavedClient />
-      </main>
-    </>
+    <main className="mx-auto w-full max-w-5xl px-6 py-10">
+      <SavedClient />
+    </main>
   );
 }

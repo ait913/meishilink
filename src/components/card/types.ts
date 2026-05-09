@@ -19,6 +19,7 @@ export type PublicCardViewModel = {
   profile?: string | null;
   snsLinks: Array<{ label: string; url: string }>;
   themeKey: string;
+  paletteKey?: string | null;
   fontKey: string;
   accentColor: string;
   isPublished: boolean;

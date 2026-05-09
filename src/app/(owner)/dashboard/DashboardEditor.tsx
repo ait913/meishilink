@@ -14,6 +14,7 @@ import { StatsPanel } from "@/app/(owner)/dashboard/StatsPanel";
 import { updateCardAction } from "@/app/(owner)/dashboard/actions";
 import { humanizeError } from "@/lib/error-messages";
 import type { StatsResponse } from "@/lib/stats";
+import { THEMES, getTheme } from "@/lib/theme";
 import { CardInputSchema, type CardInput, getDisplayName } from "@/lib/zod-schemas";
 
 type ExchangeTokenDTO = {
@@ -71,6 +72,7 @@ export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats
       profile: card.profile ?? "",
       snsLinks: card.snsLinks,
       themeKey: (card.themeKey as CardInput["themeKey"]) ?? "minimal",
+      paletteKey: card.paletteKey ?? "",
       fontKey: (card.fontKey as CardInput["fontKey"]) ?? "sans",
       accentColor: card.accentColor,
       isPublished: card.isPublished,
@@ -80,10 +82,17 @@ export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats
   const snsLinks = useFieldArray({ control: form.control, name: "snsLinks" });
 
   const watched = form.watch();
+  // テーマ切替時にパレット未一致なら最初のパレットへ自動リセット
+  const currentTheme = getTheme(watched.themeKey ?? "minimal");
+  const palettesAvailable = currentTheme.palettes;
+  const selectedPaletteKey =
+    palettesAvailable.find((p) => p.key === watched.paletteKey)?.key ?? palettesAvailable[0].key;
+
   const previewCard: PublicCardViewModel = {
     ...card,
     ...watched,
     fullName: getDisplayName(watched) || card.handle,
+    paletteKey: selectedPaletteKey,
     logoPath,
     snsLinks: watched.snsLinks ?? [],
   };
@@ -219,28 +228,64 @@ export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats
               ))}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
-              <label className="flex flex-col gap-2 text-sm text-neutral-700">
-                <span className="font-medium">テンプレート</span>
-                <select className="min-h-11 rounded-2xl border border-neutral-300 bg-white px-4" {...form.register("themeKey")}>
-                  <option value="minimal">minimal</option>
-                  <option value="mono">mono</option>
-                  <option value="warm">warm</option>
-                  <option value="navy">navy</option>
-                  <option value="sakura">sakura</option>
-                </select>
-              </label>
-              <label className="flex flex-col gap-2 text-sm text-neutral-700">
-                <span className="font-medium">フォント</span>
-                <select className="min-h-11 rounded-2xl border border-neutral-300 bg-white px-4" {...form.register("fontKey")}>
-                  <option value="sans">sans</option>
-                  <option value="serif">serif</option>
-                  <option value="mincho">mincho</option>
-                  <option value="gothic">gothic</option>
-                  <option value="round">round</option>
-                </select>
-              </label>
-              <Input error={form.formState.errors.accentColor?.message} label="アクセント色" type="color" {...form.register("accentColor")} />
+            <div className="space-y-4 rounded-[1.5rem] border border-neutral-200 bg-neutral-50 p-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="flex flex-col gap-2 text-sm text-neutral-700">
+                  <span className="font-medium">テンプレート</span>
+                  <select className="min-h-11 rounded-2xl border border-neutral-300 bg-white px-4" {...form.register("themeKey")}>
+                    {Object.values(THEMES).map((t) => (
+                      <option key={t.key} value={t.key}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-2 text-sm text-neutral-700">
+                  <span className="font-medium">フォント</span>
+                  <select className="min-h-11 rounded-2xl border border-neutral-300 bg-white px-4" {...form.register("fontKey")}>
+                    <option value="sans">sans (現代)</option>
+                    <option value="serif">serif (明朝)</option>
+                    <option value="mincho">mincho (明朝)</option>
+                    <option value="gothic">gothic (ゴシック)</option>
+                    <option value="round">round (丸ゴ)</option>
+                    <option value="display">display (Cormorant)</option>
+                    <option value="mono">mono (JetBrains Mono)</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="flex flex-col gap-2 text-sm text-neutral-700">
+                <span className="font-medium">カラーパレット</span>
+                <div className="flex flex-wrap gap-2">
+                  {palettesAvailable.map((p) => {
+                    const active = p.key === selectedPaletteKey;
+                    return (
+                      <button
+                        aria-label={p.label}
+                        className={`flex flex-col items-center gap-1 rounded-2xl border p-2 transition ${
+                          active
+                            ? "border-neutral-950 bg-white shadow-sm"
+                            : "border-neutral-200 bg-white/60 hover:border-neutral-400"
+                        }`}
+                        key={p.key}
+                        onClick={() => form.setValue("paletteKey", p.key, { shouldDirty: true })}
+                        title={p.label}
+                        type="button"
+                      >
+                        <span
+                          className="flex h-10 w-16 items-center justify-center rounded-xl border"
+                          style={{ backgroundColor: p.bg, borderColor: p.border }}
+                        >
+                          <span className="h-4 w-4 rounded-full" style={{ backgroundColor: p.accent }} />
+                        </span>
+                        <span className="text-[11px] text-neutral-700">{p.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <Input error={form.formState.errors.accentColor?.message} label="アクセント色 (パレットを上書き)" type="color" {...form.register("accentColor")} />
             </div>
 
             <label className="flex items-center gap-3 rounded-[1.5rem] border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">

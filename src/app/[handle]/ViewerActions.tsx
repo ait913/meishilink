@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { MoreModal } from "@/app/[handle]/MoreModal";
@@ -22,6 +23,9 @@ type Props = {
   poem?: string | null;
   profile?: string | null;
   snsLinks: Array<{ label: string; url: string }>;
+  isLoggedIn: boolean;
+  isOwner: boolean;
+  vcardHref: string;
 };
 
 export function ViewerActions(props: Props) {
@@ -63,9 +67,14 @@ export function ViewerActions(props: Props) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* 名刺アクション */}
       <div className="flex flex-wrap gap-3">
-        <a className="inline-flex min-h-11 items-center rounded-2xl bg-neutral-950 px-4 text-sm font-medium text-white hover:bg-neutral-800" download href={`/${props.handle}/vcard`}>
+        <a
+          className="inline-flex min-h-11 items-center rounded-2xl bg-neutral-950 px-4 text-sm font-medium text-white hover:bg-neutral-800"
+          download
+          href={props.vcardHref}
+        >
           連絡先に保存 (vCard)
         </a>
         <Button onClick={() => void saveLocal()} variant="secondary">
@@ -79,8 +88,50 @@ export function ViewerActions(props: Props) {
       </div>
       {savedState === "saved" ? <p className="text-sm text-emerald-600">ローカルに保存しました。</p> : null}
       {savedState === "error" ? <p className="text-sm text-red-600">保存に失敗しました。</p> : null}
+
+      {/* MeishiLink ナビ */}
+      <div className="flex flex-wrap gap-2 border-t border-neutral-200 pt-4 text-xs text-neutral-700">
+        <span className="self-center text-neutral-500">MeishiLink:</span>
+        <Link
+          className="inline-flex min-h-9 items-center rounded-full border border-neutral-300 bg-white/80 px-3 hover:bg-white"
+          href="/"
+        >
+          ホーム
+        </Link>
+        <Link
+          className="inline-flex min-h-9 items-center rounded-full border border-neutral-300 bg-white/80 px-3 hover:bg-white"
+          href="/saved"
+        >
+          保存一覧
+        </Link>
+        {props.isLoggedIn ? (
+          <>
+            <Link
+              className="inline-flex min-h-9 items-center rounded-full border border-neutral-300 bg-white/80 px-3 hover:bg-white"
+              href="/dashboard"
+            >
+              ダッシュボード
+            </Link>
+            {props.isOwner ? (
+              <Link
+                className="inline-flex min-h-9 items-center rounded-full bg-neutral-950 px-3 text-white hover:bg-neutral-800"
+                href="/dashboard?tab=exchange"
+              >
+                交換する
+              </Link>
+            ) : null}
+          </>
+        ) : (
+          <Link
+            className="inline-flex min-h-9 items-center rounded-full bg-neutral-950 px-3 text-white hover:bg-neutral-800"
+            href="/login"
+          >
+            あなたも作る
+          </Link>
+        )}
+      </div>
+
       <MoreModal onClose={() => setOpen(false)} open={open} poem={props.poem} profile={props.profile} snsLinks={props.snsLinks} />
     </div>
   );
 }
-
