@@ -5,6 +5,18 @@ import { isReservedHandle, isValidHandle, normalizeHandle } from "@/lib/handle";
 import { prisma } from "@/lib/prisma";
 import { CardInputSchema } from "@/lib/zod-schemas";
 
+async function resolveUserId(session: { user?: { id?: string | null; email?: string | null } } | null) {
+  const claimed = session?.user?.id ?? null;
+  if (claimed) {
+    const hit = await prisma.user.findUnique({ where: { id: claimed }, select: { id: true } });
+    if (hit) return hit.id;
+  }
+  const email = session?.user?.email ?? null;
+  if (!email) return null;
+  const byEmail = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  return byEmail?.id ?? null;
+}
+
 function emptyToNull(value?: string | null) {
   if (!value) {
     return null;
@@ -31,13 +43,15 @@ function sanitizeInput(input: Record<string, unknown>) {
   };
 }
 
-export async function POST(req: Request): Promise<Response> {  const session = await auth();
-  if (!session?.user?.id) {
+export async function POST(req: Request): Promise<Response> {
+  const session = await auth();
+  const userId = await resolveUserId(session);
+  if (!userId) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const existingCard = await prisma.card.findUnique({
-    where: { userId: session.user.id },
+    where: { userId },
     select: { id: true },
   });
   if (existingCard) {
@@ -64,7 +78,7 @@ export async function POST(req: Request): Promise<Response> {  const session = a
       data: sanitizeInput({
         ...parsed.data,
         handle: normalized,
-        userId: session.user.id,
+        userId,
         snsLinks: parsed.data.snsLinks && parsed.data.snsLinks.length > 0 ? JSON.stringify(parsed.data.snsLinks) : null,
       }) as Prisma.CardUncheckedCreateInput,
       select: { id: true, handle: true },
@@ -74,12 +88,15 @@ export async function POST(req: Request): Promise<Response> {  const session = a
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return Response.json({ error: "handle taken" }, { status: 409 });
     }
+    console.error("[POST /api/card] create failed:", error);
     return Response.json({ error: "create failed" }, { status: 500 });
   }
 }
 
-export async function PUT(req: Request): Promise<Response> {  const session = await auth();
-  if (!session?.user?.id) {
+export async function PUT(req: Request): Promise<Response> {
+  const session = await auth();
+  const userId = await resolveUserId(session);
+  if (!userId) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -90,7 +107,7 @@ export async function PUT(req: Request): Promise<Response> {  const session = aw
   }
 
   const existing = await prisma.card.findUnique({
-    where: { userId: session.user.id },
+    where: { userId },
     select: { id: true, handle: true },
   });
   if (!existing) {
@@ -98,7 +115,7 @@ export async function PUT(req: Request): Promise<Response> {  const session = aw
   }
 
   const updated = await prisma.card.update({
-    where: { userId: session.user.id },
+    where: { userId },
     data: sanitizeInput({
       ...parsed.data,
       snsLinks: parsed.data.snsLinks && parsed.data.snsLinks.length > 0 ? JSON.stringify(parsed.data.snsLinks) : null,
