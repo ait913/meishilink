@@ -3,9 +3,6 @@
 @theme {
   --font-sans: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
   --font-serif: "Hiragino Mincho ProN", "Yu Mincho", serif;
-  --color-canvas: #f5f4ef;
-  --color-ink: #121212;
-  --color-panel: #ffffff;
 }
 
 :root {
@@ -26,7 +23,7 @@ body {
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.96), transparent 28%),
     linear-gradient(160deg, #f6f2ea 0%, #f2f5f7 52%, #eef0f7 100%);
-  color: var(--color-ink);
+  color: #121212;
 }
 
 a {
@@ -55,18 +52,17 @@ a {
 }
 
 .print-single {
-  width: 91mm;
-  height: 55mm;
+  width: 55mm;
+  height: 91mm;
 }
 
 .print-a4-grid {
   width: 210mm;
   height: 297mm;
   display: grid;
-  grid-template-columns: repeat(2, 91mm);
-  grid-template-rows: repeat(5, 55mm);
+  grid-template-columns: repeat(3, 55mm);
+  grid-template-rows: repeat(3, 91mm);
   column-gap: 4mm;
   row-gap: 6mm;
-  padding: 13.5mm 14mm;
+  padding: 12mm 14mm;
 }
-

@@ -19,12 +19,12 @@ export type PreviewProps = {
 export function CardPreview({ card, compact = false }: PreviewProps) {
   const theme = getTheme(card.themeKey);
   const logo = card.logoPath ? (
-    <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-black/10 bg-white/70">
-      <Image alt={`${card.lastName}${card.firstName} のロゴ`} className="object-cover" fill sizes="56px" src={card.logoPath} unoptimized />
+    <div className="relative h-12 w-12 overflow-hidden rounded-full border border-white/30 bg-white/10">
+      <Image alt={`${card.lastName}${card.firstName} のロゴ`} className="object-cover" fill sizes="48px" src={card.logoPath} unoptimized />
     </div>
   ) : (
-    <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-dashed border-black/20 text-[10px] text-current/50">
-      LOGO
+    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-current/30 text-[9px] uppercase tracking-[0.2em] text-current/60">
+      Logo
     </div>
   );
 
@@ -42,16 +42,20 @@ export function CardPreview({ card, compact = false }: PreviewProps) {
     theme,
   };
 
-  switch (card.themeKey) {
-    case "mono":
-      return <MonoCard {...common} />;
-    case "warm":
-      return <WarmCard {...common} />;
-    case "navy":
-      return <NavyCard {...common} />;
-    case "sakura":
-      return <SakuraCard {...common} />;
-    default:
-      return <MinimalCard {...common} />;
-  }
+  const inner = (() => {
+    switch (card.themeKey) {
+      case "mono":
+        return <MonoCard {...common} />;
+      case "warm":
+        return <WarmCard {...common} />;
+      case "navy":
+        return <NavyCard {...common} />;
+      case "sakura":
+        return <SakuraCard {...common} />;
+      default:
+        return <MinimalCard {...common} />;
+    }
+  })();
+
+  return <div className="mx-auto w-full max-w-[20rem]">{inner}</div>;
 }

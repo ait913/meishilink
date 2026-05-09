@@ -2,31 +2,63 @@ import type { CSSProperties, ReactNode } from "react";
 
 import type { PreviewProps } from "@/components/card/CardPreview";
 
+const romanize = (last: string, first: string) =>
+  [last, first]
+    .filter(Boolean)
+    .join(" ")
+    .toUpperCase();
+
 export function NavyCard({
   card,
-  compact = false,
   logo,
   style,
 }: PreviewProps & { logo: ReactNode; style: CSSProperties }) {
+  const fullKana = [card.lastNameKana, card.firstNameKana].filter(Boolean).join(" ");
+
   return (
-    <article className={`card-surface relative flex w-full flex-col gap-5 overflow-hidden rounded-[2rem] border p-5 ${compact ? "aspect-[91/55] text-[11px]" : "min-h-[24rem]"}`} style={style}>
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(135deg,rgba(56,189,248,0.2),transparent)]" />
-      <div className="relative flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.28em] text-current/55">Public profile</p>
-          <h2 className={`${compact ? "text-lg" : "text-3xl"} font-semibold`}>{card.lastName} {card.firstName}</h2>
-          {card.company ? <p className="text-current/80">{card.company}</p> : null}
-          {card.department || card.jobTitle ? <p className="text-current/55">{[card.department, card.jobTitle].filter(Boolean).join(" / ")}</p> : null}
-        </div>
+    <article
+      className="card-surface relative flex aspect-[55/91] w-full flex-col gap-5 overflow-hidden rounded-[1.25rem] border px-6 py-7"
+      style={style}
+    >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[linear-gradient(135deg,rgba(255,255,255,0.07),transparent_60%)]" />
+
+      {card.jobTitle ? (
+        <p className="text-[10px] tracking-[0.32em] text-current/65">{card.jobTitle}</p>
+      ) : null}
+
+      <div className="space-y-1">
+        <h2 className="text-[1.45rem] font-semibold leading-tight">
+          {card.lastName} {card.firstName}
+        </h2>
+        {fullKana ? (
+          <p className="text-[10px] tracking-[0.28em] text-current/60">{romanize(card.lastName, card.firstName)}</p>
+        ) : (
+          <p className="text-[10px] tracking-[0.28em] text-current/60">{romanize(card.lastName, card.firstName)}</p>
+        )}
+      </div>
+
+      <div className="space-y-1.5 text-[11px] leading-relaxed text-current/85">
+        {card.company ? <p className="font-medium text-current">{card.company}</p> : null}
+        {card.department ? <p className="text-current/70">{card.department}</p> : null}
+        {card.address || card.postalCode ? (
+          <>
+            {card.postalCode ? <p>〒{card.postalCode}</p> : null}
+            {card.address ? <p>{card.address}</p> : null}
+          </>
+        ) : null}
+        {card.phone ? <p>tel. {card.phone}</p> : null}
+        {card.email ? <p className="break-all">mail. {card.email}</p> : null}
+        {card.websiteUrl ? <p className="break-all">{card.websiteUrl.replace(/^https?:\/\//, "")}</p> : null}
+      </div>
+
+      <div className="mt-auto flex items-center gap-3">
         {logo}
+        {card.company ? (
+          <span className="text-[11px] font-medium tracking-wide text-current/85">{card.company}</span>
+        ) : (
+          <span className="text-[10px] tracking-[0.2em] text-current/55">@{card.handle}</span>
+        )}
       </div>
-      <div className="relative grid gap-3 md:grid-cols-2">
-        {card.phone ? <div className="rounded-[1.25rem] border border-white/10 bg-white/6 p-3">{card.phone}</div> : null}
-        {card.email ? <div className="rounded-[1.25rem] border border-white/10 bg-white/6 p-3 break-all">{card.email}</div> : null}
-        {card.websiteUrl ? <div className="rounded-[1.25rem] border border-white/10 bg-white/6 p-3 break-all" style={{ color: "var(--accent)" }}>{card.websiteUrl}</div> : null}
-        {card.address ? <div className="rounded-[1.25rem] border border-white/10 bg-white/6 p-3">{[card.postalCode, card.address].filter(Boolean).join(" ")}</div> : null}
-      </div>
-      <div className="relative mt-auto text-xs text-current/55">@{card.handle}</div>
     </article>
   );
 }
