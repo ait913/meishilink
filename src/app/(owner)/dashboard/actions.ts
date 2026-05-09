@@ -1,11 +1,24 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { type ThemeKey, THEMES } from "@/lib/theme";
 import { CardInputSchema, type CardInput } from "@/lib/zod-schemas";
+
+async function resolveUserId(session: { user?: { id?: string | null; email?: string | null } } | null) {
+  const claimed = session?.user?.id ?? null;
+  if (claimed) {
+    const hit = await prisma.user.findUnique({ where: { id: claimed }, select: { id: true } });
+    if (hit) return hit.id;
+  }
+  const email = session?.user?.email ?? null;
+  if (!email) return null;
+  const byEmail = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  return byEmail?.id ?? null;
+}
 
 function emptyToNull(value?: string | null) {
   if (!value) {
@@ -20,7 +33,8 @@ export async function updateCardAction(input: CardInput): Promise<
   | { ok: false; error: string; fields?: Record<string, string> }
 > {
   const session = await auth();
-  if (!session?.user?.id) {
+  const userId = await resolveUserId(session);
+  if (!userId) {
     return { ok: false, error: "unauthorized" };
   }
 
@@ -34,7 +48,7 @@ export async function updateCardAction(input: CardInput): Promise<
   }
 
   const updated = await prisma.card.updateMany({
-    where: { userId: session.user.id },
+    where: { userId },
     data: {
       displayName: emptyToNull(parsed.data.displayName),
       lastName: emptyToNull(parsed.data.lastName),
@@ -65,12 +79,14 @@ export async function updateCardAction(input: CardInput): Promise<
     return { ok: false, error: "card not found, do onboarding" };
   }
 
+  revalidatePath("/dashboard");
   return { ok: true };
 }
 
 export async function selectThemeAction(themeKey: ThemeKey): Promise<{ ok: true }> {
   const session = await auth();
-  if (!session?.user?.id) {
+  const userId = await resolveUserId(session);
+  if (!userId) {
     redirect("/login");
   }
   if (!(themeKey in THEMES)) {
@@ -78,10 +94,12 @@ export async function selectThemeAction(themeKey: ThemeKey): Promise<{ ok: true 
   }
 
   await prisma.card.update({
-    where: { userId: session.user.id },
+    where: { userId },
     data: { themeKey },
   });
 
+  revalidatePath("/dashboard/templates");
+  revalidatePath("/dashboard");
   return { ok: true };
 }
 
