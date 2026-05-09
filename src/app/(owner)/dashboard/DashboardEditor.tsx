@@ -9,24 +9,35 @@ import { CardPreview } from "@/components/card/CardPreview";
 import type { PublicCardViewModel } from "@/components/card/types";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
-import { QrPanel } from "@/app/(owner)/dashboard/QrPanel";
+import { ExchangePanel } from "@/app/(owner)/dashboard/ExchangePanel";
 import { StatsPanel } from "@/app/(owner)/dashboard/StatsPanel";
 import { updateCardAction } from "@/app/(owner)/dashboard/actions";
 import { humanizeError } from "@/lib/error-messages";
 import type { StatsResponse } from "@/lib/stats";
 import { CardInputSchema, type CardInput, getDisplayName } from "@/lib/zod-schemas";
 
-type Props = {
-  card: PublicCardViewModel;
-  stats: StatsResponse;
-  publicUrl: string;
-  qrPngDataUrl: string;
-  qrSvgString: string;
+type ExchangeTokenDTO = {
+  id: string;
+  token: string;
+  label: string | null;
+  expiresAt: string | null;
+  disabled: boolean;
+  usageCount: number;
+  lastUsedAt: string | null;
+  createdAt: string;
 };
 
-type TabKey = "edit" | "qr" | "stats";
+type Props = {
+  card: PublicCardViewModel & { isPrivate: boolean };
+  stats: StatsResponse;
+  publicUrl: string;
+  baseUrl: string;
+  initialTokens: ExchangeTokenDTO[];
+};
 
-export function DashboardEditor({ card, publicUrl, qrPngDataUrl, qrSvgString, stats }: Props) {
+type TabKey = "edit" | "exchange" | "stats";
+
+export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<TabKey>("edit");
   const [saveMessage, setSaveMessage] = useState("");
@@ -57,6 +68,7 @@ export function DashboardEditor({ card, publicUrl, qrPngDataUrl, qrSvgString, st
       fontKey: (card.fontKey as CardInput["fontKey"]) ?? "sans",
       accentColor: card.accentColor,
       isPublished: card.isPublished,
+      isPrivate: card.isPrivate,
     },
   });
   const snsLinks = useFieldArray({ control: form.control, name: "snsLinks" });
@@ -109,7 +121,7 @@ export function DashboardEditor({ card, publicUrl, qrPngDataUrl, qrSvgString, st
 
   const tabs = [
     { key: "edit" as const, label: "編集" },
-    { key: "qr" as const, label: "QR" },
+    { key: "exchange" as const, label: "交換する" },
     { key: "stats" as const, label: "統計" },
   ];
 
@@ -230,6 +242,17 @@ export function DashboardEditor({ card, publicUrl, qrPngDataUrl, qrSvgString, st
               公開状態にする
             </label>
 
+            <label className="flex flex-col gap-2 rounded-[1.5rem] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-neutral-800">
+              <span className="flex items-center gap-3">
+                <input className="h-4 w-4" type="checkbox" {...form.register("isPrivate")} />
+                <span className="font-medium">プライバシーモードを ON</span>
+              </span>
+              <span className="text-xs text-neutral-600">
+                ON にすると公開 URL に交換用トークンが必要になり、トークン無しのアクセスは 404 になります。
+                対面で会った人とだけ共有したいときに。「交換する」タブからトークン発行・QR 表示できます。
+              </span>
+            </label>
+
             <div className="space-y-3 rounded-[1.5rem] border border-neutral-200 bg-neutral-50 p-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-end">
                 <label className="flex-1 text-sm text-neutral-700">
@@ -263,7 +286,14 @@ export function DashboardEditor({ card, publicUrl, qrPngDataUrl, qrSvgString, st
         </div>
       ) : null}
 
-      {tab === "qr" ? <QrPanel pngDataUrl={qrPngDataUrl} publicUrl={publicUrl} svgString={qrSvgString} /> : null}
+      {tab === "exchange" ? (
+        <ExchangePanel
+          baseUrl={baseUrl}
+          handle={card.handle}
+          initialTokens={initialTokens}
+          isPrivate={Boolean(watched.isPrivate)}
+        />
+      ) : null}
       {tab === "stats" ? <StatsPanel stats={stats} /> : null}
     </div>
   );

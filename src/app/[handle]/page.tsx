@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 
 import { PublicCard } from "@/app/[handle]/PublicCard";
 import { ViewerActions } from "@/app/[handle]/ViewerActions";
+import { resolvePublicCard } from "@/lib/exchange-token";
 import { normalizeHandle } from "@/lib/handle";
 import { prisma } from "@/lib/prisma";
 import { getDisplayName } from "@/lib/zod-schemas";
@@ -25,9 +26,17 @@ export async function generateMetadata({
       jobTitle: true,
       department: true,
       isPublished: true,
+      isPrivate: true,
     },
   });
   if (!card || !card.isPublished) return {};
+  // プライバシーモードの名刺は SNS プレビュー等で氏名露出を避ける
+  if (card.isPrivate) {
+    return {
+      title: "MeishiLink",
+      robots: { index: false, follow: false },
+    };
+  }
 
   const fullName = getDisplayName(card) || normalized;
   const orgLine = [card.company, card.department, card.jobTitle].filter(Boolean).join(" / ");
@@ -67,28 +76,33 @@ function parseSnsLinks(value: string | null) {
 
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ handle: string }>;
-}) {  const { handle: raw } = await params;
+  searchParams: Promise<{ t?: string | string[] }>;
+}) {
+  const [{ handle: raw }, search] = await Promise.all([params, searchParams]);
   const normalized = normalizeHandle(raw);
   if (!normalized) {
     notFound();
   }
 
-  const card = await prisma.card.findUnique({
-    where: { handle: normalized },
-  });
-  if (!card || !card.isPublished) {
+  const tokenRaw = search.t;
+  const token = Array.isArray(tokenRaw) ? tokenRaw[0] : tokenRaw;
+
+  const card = await resolvePublicCard(normalized, token);
+  if (!card) {
     notFound();
   }
 
   if (raw !== normalized) {
-    permanentRedirect(`/${normalized}`);
+    const suffix = token ? `?t=${encodeURIComponent(token)}` : "";
+    permanentRedirect(`/${normalized}${suffix}`);
   }
 
   const snsLinks = parseSnsLinks(card.snsLinks);
   const fullName = getDisplayName(card) || card.handle;
-  const publicUrl = `${process.env.PUBLIC_BASE_URL ?? "http://localhost:3000"}/${card.handle}`;
+  const publicUrl = `${process.env.PUBLIC_BASE_URL ?? "http://localhost:3000"}/${card.handle}${token ? `?t=${encodeURIComponent(token)}` : ""}`;
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-3xl items-center px-6 py-10">

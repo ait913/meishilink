@@ -2,16 +2,15 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { auth, signOut } from "@/auth";
+import { DashboardEditor } from "@/app/(owner)/dashboard/DashboardEditor";
+import { prisma } from "@/lib/prisma";
+import { getStatsForCard } from "@/lib/stats";
+import { getDisplayName } from "@/lib/zod-schemas";
 
 export const metadata: Metadata = {
   title: "ダッシュボード",
   robots: { index: false, follow: false },
 };
-import { DashboardEditor } from "@/app/(owner)/dashboard/DashboardEditor";
-import { generateQrPngDataUrl, generateQrSvgString } from "@/lib/qr";
-import { prisma } from "@/lib/prisma";
-import { getStatsForCard } from "@/lib/stats";
-import { getDisplayName } from "@/lib/zod-schemas";
 
 function parseSnsLinks(value: string | null) {
   if (!value) {
@@ -25,7 +24,8 @@ function parseSnsLinks(value: string | null) {
   }
 }
 
-export default async function DashboardPage() {  const session = await auth();
+export default async function DashboardPage() {
+  const session = await auth();
   if (!session?.user?.id) {
     redirect("/login");
   }
@@ -37,12 +37,32 @@ export default async function DashboardPage() {  const session = await auth();
     redirect("/onboarding");
   }
 
-  const publicUrl = `${process.env.PUBLIC_BASE_URL ?? "http://localhost:3000"}/${card.handle}`;
-  const [qrPngDataUrl, qrSvgString, stats] = await Promise.all([
-    generateQrPngDataUrl(publicUrl),
-    generateQrSvgString(publicUrl),
+  const baseUrl = process.env.PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const publicUrl = `${baseUrl}/${card.handle}`;
+  const [stats, exchangeTokens] = await Promise.all([
     getStatsForCard(card.id),
+    prisma.exchangeToken.findMany({
+      where: { cardId: card.id },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        token: true,
+        label: true,
+        expiresAt: true,
+        disabled: true,
+        usageCount: true,
+        lastUsedAt: true,
+        createdAt: true,
+      },
+    }),
   ]);
+
+  const initialTokens = exchangeTokens.map((t) => ({
+    ...t,
+    expiresAt: t.expiresAt ? t.expiresAt.toISOString() : null,
+    lastUsedAt: t.lastUsedAt ? t.lastUsedAt.toISOString() : null,
+    createdAt: t.createdAt.toISOString(),
+  }));
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -59,18 +79,17 @@ export default async function DashboardPage() {  const session = await auth();
         </form>
       </div>
       <DashboardEditor
+        baseUrl={baseUrl}
         card={{
           ...card,
           fullName: getDisplayName(card) || card.handle,
           logoPath: card.logoPath,
           snsLinks: parseSnsLinks(card.snsLinks),
         }}
+        initialTokens={initialTokens}
         publicUrl={publicUrl}
-        qrPngDataUrl={qrPngDataUrl}
-        qrSvgString={qrSvgString}
         stats={stats}
       />
     </main>
   );
 }
-

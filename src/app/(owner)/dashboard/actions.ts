@@ -36,8 +36,9 @@ export async function updateCardAction(input: CardInput): Promise<
   const updated = await prisma.card.updateMany({
     where: { userId: session.user.id },
     data: {
-      lastName: parsed.data.lastName,
-      firstName: parsed.data.firstName,
+      displayName: emptyToNull(parsed.data.displayName),
+      lastName: emptyToNull(parsed.data.lastName),
+      firstName: emptyToNull(parsed.data.firstName),
       lastNameKana: emptyToNull(parsed.data.lastNameKana),
       firstNameKana: emptyToNull(parsed.data.firstNameKana),
       company: emptyToNull(parsed.data.company),
@@ -55,6 +56,7 @@ export async function updateCardAction(input: CardInput): Promise<
       fontKey: parsed.data.fontKey,
       accentColor: parsed.data.accentColor,
       isPublished: parsed.data.isPublished,
+      isPrivate: Boolean(parsed.data.isPrivate),
     },
   });
 

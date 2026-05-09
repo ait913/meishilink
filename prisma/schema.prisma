@@ -73,15 +73,32 @@ model Card {
   poem          String?
   profile       String?
   snsLinks      String?
-  themeKey      String   @default("minimal")
-  fontKey       String   @default("sans")
-  accentColor   String   @default("#111111")
-  isPublished   Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  hits          Hit[]
+  themeKey       String   @default("minimal")
+  fontKey        String   @default("sans")
+  accentColor    String   @default("#111111")
+  isPublished    Boolean  @default(true)
+  isPrivate      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  hits           Hit[]
+  exchangeTokens ExchangeToken[]
 
   @@index([handle])
+}
+
+model ExchangeToken {
+  id         String    @id @default(cuid())
+  cardId     String
+  card       Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  token      String    @unique
+  label      String?
+  expiresAt  DateTime?
+  disabled   Boolean   @default(false)
+  usageCount Int       @default(0)
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([cardId])
 }
 
 model Hit {
