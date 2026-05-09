@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 
+import { SnsIcon } from "@/components/icons/SnsIcon";
 import type { PreviewProps } from "@/components/card/CardPreview";
 
 export function MonoCard({
@@ -7,6 +8,9 @@ export function MonoCard({
   logo,
   style,
 }: PreviewProps & { logo: ReactNode; style: CSSProperties }) {
+  const site = card.websiteUrl ?? "";
+  const siteHref = site ? (site.startsWith("http") ? site : `https://${site}`) : "";
+
   return (
     <article
       className="card-surface flex aspect-[55/91] w-full flex-col gap-4 rounded-[1.25rem] border px-6 py-7"
@@ -29,15 +33,54 @@ export function MonoCard({
         ) : null}
       </div>
       <div className="grid gap-1 text-[10.5px] text-current/85">
-        {card.phone ? <p>tel. {card.phone}</p> : null}
-        {card.email ? <p className="break-all">mail. {card.email}</p> : null}
-        {card.websiteUrl ? (
-          <p className="break-all" style={{ color: "var(--accent)" }}>{card.websiteUrl.replace(/^https?:\/\//, "")}</p>
+        {card.phone ? (
+          <p>
+            tel.{" "}
+            <a className="hover:underline" href={`tel:${card.phone.replace(/[^0-9+]/g, "")}`}>{card.phone}</a>
+          </p>
+        ) : null}
+        {card.email ? (
+          <p className="break-all">
+            mail.{" "}
+            <a className="hover:underline" href={`mailto:${card.email}`}>{card.email}</a>
+          </p>
+        ) : null}
+        {siteHref ? (
+          <p className="break-all">
+            <a
+              className="inline-flex items-center gap-1 hover:underline"
+              href={siteHref}
+              rel="noopener noreferrer"
+              style={{ color: "var(--accent)" }}
+              target="_blank"
+            >
+              <SnsIcon className="h-3 w-3" url={siteHref} />
+              {siteHref.replace(/^https?:\/\//, "")}
+            </a>
+          </p>
         ) : null}
         {card.address || card.postalCode ? (
           <p className="text-current/65">{[card.postalCode ? `〒${card.postalCode}` : "", card.address].filter(Boolean).join(" ")}</p>
         ) : null}
       </div>
+      {card.snsLinks.length > 0 ? (
+        <ul className="flex flex-wrap gap-2">
+          {card.snsLinks.map((sns) => (
+            <li key={sns.url}>
+              <a
+                aria-label={sns.label}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-current/30 text-current/85 transition hover:bg-current/10"
+                href={sns.url}
+                rel="noopener noreferrer"
+                target="_blank"
+                title={sns.label}
+              >
+                <SnsIcon className="h-3.5 w-3.5" url={sns.url} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       <div className="mt-auto border-t border-current/15 pt-2 text-[9px] tracking-[0.32em] text-current/55">
         @{card.handle}
       </div>

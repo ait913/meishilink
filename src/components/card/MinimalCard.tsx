@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 
+import { SnsIcon } from "@/components/icons/SnsIcon";
 import type { PreviewProps } from "@/components/card/CardPreview";
 
 export function MinimalCard({
@@ -7,6 +8,9 @@ export function MinimalCard({
   logo,
   style,
 }: PreviewProps & { logo: ReactNode; style: CSSProperties }) {
+  const site = card.websiteUrl ?? "";
+  const siteHref = site ? (site.startsWith("http") ? site : `https://${site}`) : "";
+
   return (
     <article
       className="card-surface flex aspect-[55/91] w-full flex-col gap-4 rounded-[1.25rem] border px-6 py-7"
@@ -36,18 +40,66 @@ export function MinimalCard({
       </div>
       <dl className="grid gap-1 text-[10.5px] text-current/85">
         {card.phone ? (
-          <div className="grid grid-cols-[2.5rem,1fr] gap-2"><dt className="text-current/55">tel.</dt><dd>{card.phone}</dd></div>
+          <div className="grid grid-cols-[2.5rem,1fr] gap-2">
+            <dt className="text-current/55">tel.</dt>
+            <dd>
+              <a className="hover:underline" href={`tel:${card.phone.replace(/[^0-9+]/g, "")}`}>
+                {card.phone}
+              </a>
+            </dd>
+          </div>
         ) : null}
         {card.email ? (
-          <div className="grid grid-cols-[2.5rem,1fr] gap-2"><dt className="text-current/55">mail.</dt><dd className="break-all">{card.email}</dd></div>
+          <div className="grid grid-cols-[2.5rem,1fr] gap-2">
+            <dt className="text-current/55">mail.</dt>
+            <dd className="break-all">
+              <a className="hover:underline" href={`mailto:${card.email}`}>
+                {card.email}
+              </a>
+            </dd>
+          </div>
         ) : null}
-        {card.websiteUrl ? (
-          <div className="grid grid-cols-[2.5rem,1fr] gap-2"><dt className="text-current/55">web.</dt><dd className="break-all">{card.websiteUrl.replace(/^https?:\/\//, "")}</dd></div>
+        {siteHref ? (
+          <div className="grid grid-cols-[2.5rem,1fr] gap-2">
+            <dt className="text-current/55">web.</dt>
+            <dd className="break-all">
+              <a
+                className="inline-flex items-center gap-1 hover:underline"
+                href={siteHref}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <SnsIcon className="h-3 w-3" url={siteHref} />
+                {siteHref.replace(/^https?:\/\//, "")}
+              </a>
+            </dd>
+          </div>
         ) : null}
         {card.address || card.postalCode ? (
-          <div className="grid grid-cols-[2.5rem,1fr] gap-2"><dt className="text-current/55">add.</dt><dd>{[card.postalCode ? `〒${card.postalCode}` : "", card.address].filter(Boolean).join(" ")}</dd></div>
+          <div className="grid grid-cols-[2.5rem,1fr] gap-2">
+            <dt className="text-current/55">add.</dt>
+            <dd>{[card.postalCode ? `〒${card.postalCode}` : "", card.address].filter(Boolean).join(" ")}</dd>
+          </div>
         ) : null}
       </dl>
+      {card.snsLinks.length > 0 ? (
+        <ul className="flex flex-wrap gap-2">
+          {card.snsLinks.map((sns) => (
+            <li key={sns.url}>
+              <a
+                aria-label={sns.label}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-current/20 text-current/85 transition hover:bg-current/5"
+                href={sns.url}
+                rel="noopener noreferrer"
+                target="_blank"
+                title={sns.label}
+              >
+                <SnsIcon className="h-3.5 w-3.5" url={sns.url} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       <div className="mt-auto border-t border-current/10 pt-2 text-[9px] tracking-[0.32em] text-current/40" style={{ color: "var(--accent)" }}>
         MEISHILINK
       </div>
