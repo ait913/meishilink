@@ -14,7 +14,7 @@ import { StatsPanel } from "@/app/(owner)/dashboard/StatsPanel";
 import { updateCardAction } from "@/app/(owner)/dashboard/actions";
 import { humanizeError } from "@/lib/error-messages";
 import type { StatsResponse } from "@/lib/stats";
-import { CardInputSchema, type CardInput } from "@/lib/zod-schemas";
+import { CardInputSchema, type CardInput, getDisplayName } from "@/lib/zod-schemas";
 
 type Props = {
   card: PublicCardViewModel;
@@ -37,8 +37,9 @@ export function DashboardEditor({ card, publicUrl, qrPngDataUrl, qrSvgString, st
   const form = useForm<CardInput>({
     resolver: zodResolver(CardInputSchema),
     defaultValues: {
-      lastName: card.lastName,
-      firstName: card.firstName,
+      displayName: card.displayName ?? "",
+      lastName: card.lastName ?? "",
+      firstName: card.firstName ?? "",
       lastNameKana: card.lastNameKana ?? "",
       firstNameKana: card.firstNameKana ?? "",
       company: card.company ?? "",
@@ -60,11 +61,13 @@ export function DashboardEditor({ card, publicUrl, qrPngDataUrl, qrSvgString, st
   });
   const snsLinks = useFieldArray({ control: form.control, name: "snsLinks" });
 
+  const watched = form.watch();
   const previewCard: PublicCardViewModel = {
     ...card,
-    ...form.watch(),
+    ...watched,
+    fullName: getDisplayName(watched) || card.handle,
     logoPath,
-    snsLinks: form.watch("snsLinks") ?? [],
+    snsLinks: watched.snsLinks ?? [],
   };
 
   async function onSave(values: CardInput) {
@@ -137,14 +140,27 @@ export function DashboardEditor({ card, publicUrl, qrPngDataUrl, qrSvgString, st
       {tab === "edit" ? (
         <div className="dashboard-grid">
           <form className="space-y-5 rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-lg shadow-neutral-200/60" onSubmit={form.handleSubmit((values) => startTransition(() => void onSave(values)))}>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Input error={form.formState.errors.lastName?.message} label="氏名 (姓)" {...form.register("lastName")} />
-              <Input error={form.formState.errors.firstName?.message} label="氏名 (名)" {...form.register("firstName")} />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Input error={form.formState.errors.lastNameKana?.message} label="振り仮名 (姓)" {...form.register("lastNameKana")} />
-              <Input error={form.formState.errors.firstNameKana?.message} label="振り仮名 (名)" {...form.register("firstNameKana")} />
-            </div>
+            <Input
+              error={form.formState.errors.displayName?.message}
+              label="表示名 (必須) ─ ニックネーム / 氏名 / 屋号"
+              placeholder="例: 山田 太郎、tanaka、@kosen"
+              {...form.register("displayName")}
+            />
+            <details className="rounded-2xl border border-neutral-200 bg-white/60 p-4">
+              <summary className="cursor-pointer text-sm font-medium text-neutral-700">
+                氏名 (姓・名) を分けて入力する (任意 — vCard で姓名フィールドに分割保存されます)
+              </summary>
+              <div className="mt-4 space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Input error={form.formState.errors.lastName?.message} label="氏名 (姓)" {...form.register("lastName")} />
+                  <Input error={form.formState.errors.firstName?.message} label="氏名 (名)" {...form.register("firstName")} />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Input error={form.formState.errors.lastNameKana?.message} label="振り仮名 (姓)" {...form.register("lastNameKana")} />
+                  <Input error={form.formState.errors.firstNameKana?.message} label="振り仮名 (名)" {...form.register("firstNameKana")} />
+                </div>
+              </div>
+            </details>
             <Input error={form.formState.errors.company?.message} label="会社名" {...form.register("company")} />
             <div className="grid gap-4 md:grid-cols-2">
               <Input error={form.formState.errors.department?.message} label="部署" {...form.register("department")} />

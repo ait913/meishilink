@@ -1,5 +1,15 @@
-export type ThemeKey = "minimal" | "mono" | "warm" | "navy" | "sakura";
-export type FontKey = "sans" | "serif" | "mincho" | "gothic" | "round";
+export type ThemeKey =
+  | "minimal"
+  | "mono"
+  | "warm"
+  | "navy"
+  | "sakura"
+  | "mincho"
+  | "washi"
+  | "letterpress"
+  | "engineer";
+
+export type FontKey = "sans" | "serif" | "mincho" | "gothic" | "round" | "display" | "mono";
 
 export interface Theme {
   key: ThemeKey;
@@ -9,7 +19,7 @@ export interface Theme {
   subFg: string;
   border: string;
   accentDefault: string;
-  layout: "stacked" | "split" | "card";
+  layout: "stacked" | "split" | "card" | "vertical";
 }
 
 export const THEMES: Record<ThemeKey, Theme> = {
@@ -63,21 +73,62 @@ export const THEMES: Record<ThemeKey, Theme> = {
     accentDefault: "#db2777",
     layout: "card",
   },
+  mincho: {
+    key: "mincho",
+    label: "縦書き明朝",
+    bg: "#fbf9f3",
+    fg: "#1c1410",
+    subFg: "#5a4a3e",
+    border: "#d8cfb5",
+    accentDefault: "#7f1d1d",
+    layout: "vertical",
+  },
+  washi: {
+    key: "washi",
+    label: "和紙",
+    bg: "#f3ece0",
+    fg: "#2a1f12",
+    subFg: "#6b5a3f",
+    border: "#c8b894",
+    accentDefault: "#92400e",
+    layout: "vertical",
+  },
+  letterpress: {
+    key: "letterpress",
+    label: "レタープレス",
+    bg: "#efe8dc",
+    fg: "#1a1a1a",
+    subFg: "#666666",
+    border: "#a89e89",
+    accentDefault: "#1a1a1a",
+    layout: "stacked",
+  },
+  engineer: {
+    key: "engineer",
+    label: "エンジニア",
+    bg: "#0a0a0f",
+    fg: "#cdd6f4",
+    subFg: "#6c7086",
+    border: "#1e1e2e",
+    accentDefault: "#89b4fa",
+    layout: "stacked",
+  },
 };
 
 export const FONT_STACKS: Record<FontKey, string> = {
   sans: 'system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif',
-  serif: '"Hiragino Mincho ProN", "Yu Mincho", "Times New Roman", serif',
-  mincho: '"Hiragino Mincho ProN", "Yu Mincho", serif',
+  serif: '"Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif',
+  mincho: '"Shippori Mincho", "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif',
   gothic: '"Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif',
-  round: '"Hiragino Maru Gothic ProN", "M PLUS Rounded 1c", system-ui, sans-serif',
+  round: '"Klee One", "Hiragino Maru Gothic ProN", "M PLUS Rounded 1c", system-ui, sans-serif',
+  display: '"Cormorant Garamond", "Shippori Mincho", "Hiragino Mincho ProN", serif',
+  mono: '"JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
 };
 
-export function getTheme(themeKey: string) {
+export function getTheme(themeKey: string): Theme {
   return THEMES[(themeKey as ThemeKey) in THEMES ? (themeKey as ThemeKey) : "minimal"];
 }
 
-export function getFontStack(fontKey: string) {
+export function getFontStack(fontKey: string): string {
   return FONT_STACKS[(fontKey as FontKey) in FONT_STACKS ? (fontKey as FontKey) : "sans"];
 }
-

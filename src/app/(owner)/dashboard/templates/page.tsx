@@ -6,6 +6,7 @@ import { selectThemeAction } from "@/app/(owner)/dashboard/actions";
 import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { THEMES } from "@/lib/theme";
+import { getDisplayName } from "@/lib/zod-schemas";
 
 function parseSnsLinks(value: string | null) {
   if (!value) {
@@ -65,6 +66,7 @@ export default async function TemplatesPage() {  const session = await auth();
             <PublicCard
               card={{
                 ...card,
+                fullName: getDisplayName(card) || card.handle,
                 themeKey: theme.key,
                 snsLinks: parseSnsLinks(card.snsLinks),
               }}

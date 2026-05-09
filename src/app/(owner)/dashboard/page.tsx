@@ -11,6 +11,7 @@ import { DashboardEditor } from "@/app/(owner)/dashboard/DashboardEditor";
 import { generateQrPngDataUrl, generateQrSvgString } from "@/lib/qr";
 import { prisma } from "@/lib/prisma";
 import { getStatsForCard } from "@/lib/stats";
+import { getDisplayName } from "@/lib/zod-schemas";
 
 function parseSnsLinks(value: string | null) {
   if (!value) {
@@ -60,6 +61,7 @@ export default async function DashboardPage() {  const session = await auth();
       <DashboardEditor
         card={{
           ...card,
+          fullName: getDisplayName(card) || card.handle,
           logoPath: card.logoPath,
           snsLinks: parseSnsLinks(card.snsLinks),
         }}

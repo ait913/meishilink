@@ -24,7 +24,7 @@ export function MinimalCard({
       </div>
       <div className="space-y-1">
         <h2 className="text-[1.45rem] font-semibold leading-tight tracking-tight">
-          {card.lastName} {card.firstName}
+          {card.fullName}
         </h2>
         {card.lastNameKana || card.firstNameKana ? (
           <p className="text-[10px] tracking-[0.2em] text-current/55">

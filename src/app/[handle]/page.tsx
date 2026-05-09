@@ -5,6 +5,7 @@ import { PublicCard } from "@/app/[handle]/PublicCard";
 import { ViewerActions } from "@/app/[handle]/ViewerActions";
 import { normalizeHandle } from "@/lib/handle";
 import { prisma } from "@/lib/prisma";
+import { getDisplayName } from "@/lib/zod-schemas";
 
 export async function generateMetadata({
   params,
@@ -17,6 +18,7 @@ export async function generateMetadata({
   const card = await prisma.card.findUnique({
     where: { handle: normalized },
     select: {
+      displayName: true,
       lastName: true,
       firstName: true,
       company: true,
@@ -27,7 +29,7 @@ export async function generateMetadata({
   });
   if (!card || !card.isPublished) return {};
 
-  const fullName = `${card.lastName} ${card.firstName}`;
+  const fullName = getDisplayName(card) || normalized;
   const orgLine = [card.company, card.department, card.jobTitle].filter(Boolean).join(" / ");
   const description = orgLine
     ? `${fullName} の Web 名刺。${orgLine}。MeishiLink で QR・vCard で受け取れます。`
@@ -85,7 +87,7 @@ export default async function Page({
   }
 
   const snsLinks = parseSnsLinks(card.snsLinks);
-  const fullName = `${card.lastName} ${card.firstName}`;
+  const fullName = getDisplayName(card) || card.handle;
   const publicUrl = `${process.env.PUBLIC_BASE_URL ?? "http://localhost:3000"}/${card.handle}`;
 
   return (
@@ -94,6 +96,7 @@ export default async function Page({
         <PublicCard
           card={{
             ...card,
+            fullName,
             snsLinks,
           }}
         />

@@ -1,7 +1,9 @@
 export type PublicCardViewModel = {
   handle: string;
-  lastName: string;
-  firstName: string;
+  fullName: string;
+  displayName?: string | null;
+  lastName?: string | null;
+  firstName?: string | null;
   lastNameKana?: string | null;
   firstNameKana?: string | null;
   company?: string | null;

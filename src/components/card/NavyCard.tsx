@@ -3,18 +3,17 @@ import type { CSSProperties, ReactNode } from "react";
 import { SnsIcon } from "@/components/icons/SnsIcon";
 import type { PreviewProps } from "@/components/card/CardPreview";
 
-const romanize = (last: string, first: string) =>
-  [last, first]
-    .filter(Boolean)
-    .join(" ")
-    .toUpperCase();
+const romanize = (last?: string | null, first?: string | null, fallback = "") => {
+  const joined = [last, first].filter(Boolean).join(" ").trim();
+  return (joined || fallback).toUpperCase();
+};
 
 export function NavyCard({
   card,
   logo,
   style,
 }: PreviewProps & { logo: ReactNode; style: CSSProperties }) {
-  const roman = romanize(card.lastName, card.firstName);
+  const roman = romanize(card.lastName, card.firstName, card.fullName);
   const site = card.websiteUrl ?? "";
   const siteHref = site ? (site.startsWith("http") ? site : `https://${site}`) : "";
 
@@ -31,7 +30,7 @@ export function NavyCard({
 
       <div className="space-y-1">
         <h2 className="text-[1.45rem] font-semibold leading-tight">
-          {card.lastName} {card.firstName}
+          {card.fullName}
         </h2>
         <p className="text-[10px] tracking-[0.28em] text-current/60">{roman}</p>
       </div>

@@ -125,15 +125,28 @@ export function OnboardingForm({ baseHost = "meishilink.appily.run" }: { baseHos
       </div>
 
       <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Input error={form.formState.errors.lastName?.message} label="氏名 (姓)" {...form.register("lastName")} />
-          <Input error={form.formState.errors.firstName?.message} label="氏名 (名)" {...form.register("firstName")} />
-        </div>
+        <Input
+          error={form.formState.errors.displayName?.message}
+          label="表示名 (必須) ─ ニックネーム / 氏名 / 屋号"
+          placeholder="例: 山田 太郎、tanaka、@kosen"
+          {...form.register("displayName")}
+        />
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Input error={form.formState.errors.lastNameKana?.message} label="振り仮名 (姓)" {...form.register("lastNameKana")} />
-          <Input error={form.formState.errors.firstNameKana?.message} label="振り仮名 (名)" {...form.register("firstNameKana")} />
-        </div>
+        <details className="rounded-2xl border border-neutral-200 bg-white/60 p-4">
+          <summary className="cursor-pointer text-sm font-medium text-neutral-700">
+            氏名 (姓・名) を分けて入力する (任意 — vCard 出力時に姓名として書き出されます)
+          </summary>
+          <div className="mt-4 space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Input error={form.formState.errors.lastName?.message} label="氏名 (姓)" {...form.register("lastName")} />
+              <Input error={form.formState.errors.firstName?.message} label="氏名 (名)" {...form.register("firstName")} />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Input error={form.formState.errors.lastNameKana?.message} label="振り仮名 (姓)" {...form.register("lastNameKana")} />
+              <Input error={form.formState.errors.firstNameKana?.message} label="振り仮名 (名)" {...form.register("firstNameKana")} />
+            </div>
+          </div>
+        </details>
 
         <Input error={form.formState.errors.company?.message} label="会社名" {...form.register("company")} />
         <div className="grid gap-4 md:grid-cols-2">
