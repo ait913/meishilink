@@ -56,8 +56,9 @@ model Card {
   userId        String   @unique
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   handle        String   @unique
-  lastName      String
-  firstName     String
+  displayName   String?
+  lastName      String?
+  firstName     String?
   lastNameKana  String?
   firstNameKana String?
   company       String?

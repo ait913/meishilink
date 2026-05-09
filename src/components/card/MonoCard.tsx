@@ -21,7 +21,7 @@ export function MonoCard({
         <p className="text-[9px] uppercase tracking-[0.32em] text-current/55">Digital business card</p>
       </div>
       <div className="space-y-1">
-        <h2 className="text-[1.45rem] font-semibold leading-tight">{card.lastName} {card.firstName}</h2>
+        <h2 className="text-[1.45rem] font-semibold leading-tight">{card.fullName}</h2>
         {card.lastNameKana || card.firstNameKana ? (
           <p className="text-[10px] tracking-[0.2em] text-current/55">{[card.lastNameKana, card.firstNameKana].filter(Boolean).join(" ")}</p>
         ) : null}

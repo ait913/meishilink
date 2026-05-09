@@ -15,8 +15,9 @@ function clean(value?: string | null): string | undefined {
 }
 
 export function buildVcard(card: {
-  lastName: string;
-  firstName: string;
+  displayName?: string | null;
+  lastName?: string | null;
+  firstName?: string | null;
   lastNameKana?: string | null;
   firstNameKana?: string | null;
   company?: string | null;
@@ -29,11 +30,19 @@ export function buildVcard(card: {
   websiteUrl?: string | null;
   logoUrl?: string | null;
 }): string {
+  const lastName = clean(card.lastName) ?? "";
+  const firstName = clean(card.firstName) ?? "";
+  const display = clean(card.displayName) ?? [lastName, firstName].filter(Boolean).join(" ").trim();
+  const fn = display || lastName || firstName || "";
+  // N: は「姓;名;...」3.0 必須。displayName しかない場合は姓部分に置く (iOS / Android がフォールバックで認識)
+  const nLast = lastName || display;
+  const nFirst = firstName;
+
   const lines = [
     "BEGIN:VCARD",
     "VERSION:3.0",
-    `N:${escapeValue(card.lastName)};${escapeValue(card.firstName)};;;`,
-    `FN:${escapeValue(`${card.lastName} ${card.firstName}`)}`,
+    `N:${escapeValue(nLast)};${escapeValue(nFirst)};;;`,
+    `FN:${escapeValue(fn)}`,
   ];
 
   const lastNameKana = clean(card.lastNameKana);

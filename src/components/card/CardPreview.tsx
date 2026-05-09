@@ -5,11 +5,15 @@ import Image from "next/image";
 
 import { getFontStack, getTheme } from "@/lib/theme";
 import type { PublicCardViewModel } from "@/components/card/types";
+import { EngineerCard } from "@/components/card/EngineerCard";
+import { LetterpressCard } from "@/components/card/LetterpressCard";
+import { MinchoCard } from "@/components/card/MinchoCard";
 import { MinimalCard } from "@/components/card/MinimalCard";
 import { MonoCard } from "@/components/card/MonoCard";
 import { NavyCard } from "@/components/card/NavyCard";
 import { SakuraCard } from "@/components/card/SakuraCard";
 import { WarmCard } from "@/components/card/WarmCard";
+import { WashiCard } from "@/components/card/WashiCard";
 
 export type PreviewProps = {
   card: PublicCardViewModel;
@@ -48,6 +52,14 @@ export function CardPreview({ card, compact = false }: PreviewProps) {
         return <NavyCard {...common} />;
       case "sakura":
         return <SakuraCard {...common} />;
+      case "mincho":
+        return <MinchoCard {...common} />;
+      case "washi":
+        return <WashiCard {...common} />;
+      case "letterpress":
+        return <LetterpressCard {...common} />;
+      case "engineer":
+        return <EngineerCard {...common} />;
       default:
         return <MinimalCard {...common} />;
     }

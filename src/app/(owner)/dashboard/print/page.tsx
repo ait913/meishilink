@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { PrintClient } from "@/app/(owner)/dashboard/print/PrintClient";
 import { prisma } from "@/lib/prisma";
+import { getDisplayName } from "@/lib/zod-schemas";
 
 function parseSnsLinks(value: string | null) {
   if (!value) {
@@ -42,6 +43,7 @@ export default async function PrintPage() {  const session = await auth();
       <PrintClient
         card={{
           ...card,
+          fullName: getDisplayName(card) || card.handle,
           logoPath: card.logoPath,
           snsLinks: parseSnsLinks(card.snsLinks),
         }}
