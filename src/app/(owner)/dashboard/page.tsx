@@ -39,30 +39,7 @@ export default async function DashboardPage() {
 
   const baseUrl = process.env.PUBLIC_BASE_URL ?? "http://localhost:3000";
   const publicUrl = `${baseUrl}/${card.handle}`;
-  const [stats, exchangeTokens] = await Promise.all([
-    getStatsForCard(card.id),
-    prisma.exchangeToken.findMany({
-      where: { cardId: card.id },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        token: true,
-        label: true,
-        expiresAt: true,
-        disabled: true,
-        usageCount: true,
-        lastUsedAt: true,
-        createdAt: true,
-      },
-    }),
-  ]);
-
-  const initialTokens = exchangeTokens.map((t) => ({
-    ...t,
-    expiresAt: t.expiresAt ? t.expiresAt.toISOString() : null,
-    lastUsedAt: t.lastUsedAt ? t.lastUsedAt.toISOString() : null,
-    createdAt: t.createdAt.toISOString(),
-  }));
+  const stats = await getStatsForCard(card.id);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -86,7 +63,6 @@ export default async function DashboardPage() {
           logoPath: card.logoPath,
           snsLinks: parseSnsLinks(card.snsLinks),
         }}
-        initialTokens={initialTokens}
         publicUrl={publicUrl}
         stats={stats}
       />

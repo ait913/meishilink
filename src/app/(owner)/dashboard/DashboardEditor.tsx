@@ -10,7 +10,6 @@ import type { PublicCardViewModel } from "@/components/card/types";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
-import { ExchangePanel } from "@/app/(owner)/dashboard/ExchangePanel";
 import { ExchangeQuickDialog } from "@/app/(owner)/dashboard/ExchangeQuickDialog";
 import { StatsPanel } from "@/app/(owner)/dashboard/StatsPanel";
 import { updateCardAction } from "@/app/(owner)/dashboard/actions";
@@ -19,42 +18,35 @@ import type { StatsResponse } from "@/lib/stats";
 import { THEMES, getTheme } from "@/lib/theme";
 import { CardInputSchema, type CardInput, getDisplayName } from "@/lib/zod-schemas";
 
-type ExchangeTokenDTO = {
-  id: string;
-  token: string;
-  label: string | null;
-  expiresAt: string | null;
-  disabled: boolean;
-  usageCount: number;
-  lastUsedAt: string | null;
-  createdAt: string;
-};
-
 type Props = {
   card: PublicCardViewModel & { isPrivate: boolean };
   stats: StatsResponse;
   publicUrl: string;
   baseUrl: string;
-  initialTokens: ExchangeTokenDTO[];
 };
 
-type TabKey = "edit" | "exchange" | "stats";
+type TabKey = "edit" | "stats";
 
-export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats }: Props) {
+export function DashboardEditor({ card, publicUrl, baseUrl, stats }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
   const initialTab: TabKey = (() => {
     const t = searchParams.get("tab");
-    if (t === "exchange" || t === "stats") return t;
+    if (t === "exchange") {
+      // 旧 deep link は新クイック交換モーダルで開く
+      return "edit";
+    }
+    if (t === "stats") return t;
     return "edit";
   })();
+  const openExchangeOnMount = searchParams.get("tab") === "exchange";
   const [tab, setTab] = useState<TabKey>(initialTab);
   const [savePending, startSaveTransition] = useTransition();
   const [uploadPending, startUploadTransition] = useTransition();
   const [logoPath, setLogoPath] = useState(card.logoPath ?? "");
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [exchangeOpen, setExchangeOpen] = useState(false);
+  const [exchangeOpen, setExchangeOpen] = useState(openExchangeOnMount);
 
   const form = useForm<CardInput>({
     resolver: zodResolver(CardInputSchema),
@@ -143,7 +135,6 @@ export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats
 
   const tabs = [
     { key: "edit" as const, label: "編集" },
-    { key: "exchange" as const, label: "交換する" },
     { key: "stats" as const, label: "統計" },
   ];
 
@@ -343,14 +334,6 @@ export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats
         </div>
       ) : null}
 
-      {tab === "exchange" ? (
-        <ExchangePanel
-          baseUrl={baseUrl}
-          handle={card.handle}
-          initialTokens={initialTokens}
-          isPrivate={Boolean(watched.isPrivate)}
-        />
-      ) : null}
       {tab === "stats" ? <StatsPanel stats={stats} /> : null}
 
       <ExchangeQuickDialog
