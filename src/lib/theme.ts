@@ -7,9 +7,14 @@ export type ThemeKey =
   | "mincho"
   | "washi"
   | "letterpress"
-  | "engineer";
+  | "engineer"
+  | "leather"
+  | "gradient"
+  | "sticker"
+  | "vapor"
+  | "doodle";
 
-export type FontKey = "sans" | "serif" | "mincho" | "gothic" | "round" | "display" | "mono";
+export type FontKey = "sans" | "serif" | "mincho" | "gothic" | "round" | "display" | "mono" | "script";
 
 export interface Palette {
   key: string;
@@ -70,6 +75,8 @@ const themes: Record<ThemeKey, Theme> = {
       { key: "royal", label: "ロイヤル", bg: "#1e3a8a", fg: "#eff6ff", subFg: "#bfdbfe", border: "#3b82f6", accent: "#fbbf24" },
       { key: "midnight", label: "ミッドナイト", bg: "#020617", fg: "#e2e8f0", subFg: "#64748b", border: "#1e293b", accent: "#22d3ee" },
       { key: "indigo", label: "インディゴ", bg: "#1e1b4b", fg: "#f5f3ff", subFg: "#a5b4fc", border: "#4338ca", accent: "#f472b6" },
+      { key: "light", label: "ライト", bg: "#f8fafc", fg: "#0f172a", subFg: "#475569", border: "#cbd5e1", accent: "#0369a1" },
+      { key: "ivory", label: "アイボリー", bg: "#fbf6ec", fg: "#0f172a", subFg: "#5a4a3e", border: "#dccfb1", accent: "#1e40af" },
     ],
   },
   sakura: {
@@ -126,6 +133,61 @@ const themes: Record<ThemeKey, Theme> = {
       { key: "solarized", label: "Solarized", bg: "#fdf6e3", fg: "#073642", subFg: "#586e75", border: "#eee8d5", accent: "#268bd2" },
     ],
   },
+  leather: {
+    key: "leather",
+    label: "レザー",
+    layout: "stacked",
+    palettes: [
+      { key: "navy", label: "ネイビー革", bg: "#1e3a5f", fg: "#f1ece0", subFg: "#cdb088", border: "#0f1f3a", accent: "#d4a574" },
+      { key: "brown", label: "茶革", bg: "#3a2615", fg: "#f5ebd5", subFg: "#cda77a", border: "#1f1408", accent: "#d4a574" },
+      { key: "burgundy", label: "ボルドー", bg: "#3a0e1c", fg: "#f5e8d8", subFg: "#c89a8a", border: "#1f0612", accent: "#d4a574" },
+      { key: "ink", label: "墨革", bg: "#0f0f0f", fg: "#f1ece0", subFg: "#a89a82", border: "#1a1a1a", accent: "#c9a87b" },
+    ],
+  },
+  gradient: {
+    key: "gradient",
+    label: "グラデーション",
+    layout: "stacked",
+    palettes: [
+      { key: "sunset", label: "サンセット", bg: "#ff7a8c", fg: "#1a0c2e", subFg: "#3a1a47", border: "#ff95a3", accent: "#fbbf24" },
+      { key: "aurora", label: "オーロラ", bg: "#2bc0e4", fg: "#04244a", subFg: "#0a3a6e", border: "#5edcff", accent: "#a855f7" },
+      { key: "candy", label: "キャンディ", bg: "#fdb1d3", fg: "#2a0c2e", subFg: "#5a1c5e", border: "#ffc8df", accent: "#7c3aed" },
+      { key: "matcha", label: "抹茶", bg: "#a3d977", fg: "#0c2410", subFg: "#1c4424", border: "#bbe690", accent: "#0891b2" },
+    ],
+  },
+  sticker: {
+    key: "sticker",
+    label: "ステッカー",
+    layout: "stacked",
+    palettes: [
+      { key: "pop-pink", label: "ポップピンク", bg: "#ffe0ec", fg: "#3a0824", subFg: "#a8456e", border: "#ff7eb6", accent: "#dc2683" },
+      { key: "pop-blue", label: "ポップブルー", bg: "#dbeafe", fg: "#0c2447", subFg: "#3b6fad", border: "#60a5fa", accent: "#2563eb" },
+      { key: "pop-mint", label: "ポップミント", bg: "#d1fae5", fg: "#0a3a24", subFg: "#3a7059", border: "#34d399", accent: "#10b981" },
+      { key: "pop-yellow", label: "ポップイエロー", bg: "#fef3c7", fg: "#3a2a05", subFg: "#7a5a1a", border: "#fbbf24", accent: "#d97706" },
+    ],
+  },
+  vapor: {
+    key: "vapor",
+    label: "ヴェイパー",
+    layout: "stacked",
+    palettes: [
+      { key: "synthwave", label: "シンセウェーブ", bg: "#1a0938", fg: "#ff71ce", subFg: "#b967ff", border: "#ff71ce", accent: "#01cdfe" },
+      { key: "cyberpunk", label: "サイバーパンク", bg: "#0a0a23", fg: "#fcee0a", subFg: "#ff003c", border: "#ff003c", accent: "#00fff5" },
+      { key: "matrix", label: "マトリックス", bg: "#000000", fg: "#00ff41", subFg: "#008f11", border: "#003b00", accent: "#00ff41" },
+      { key: "miami", label: "マイアミ", bg: "#1f0f3d", fg: "#fef08a", subFg: "#f472b6", border: "#7c3aed", accent: "#22d3ee" },
+    ],
+  },
+  doodle: {
+    key: "doodle",
+    label: "らくがき",
+    layout: "stacked",
+    palettes: [
+      { key: "cream", label: "クリーム", bg: "#fffbeb", fg: "#1c1917", subFg: "#78716c", border: "#1c1917", accent: "#dc2626" },
+      { key: "mint", label: "ミント", bg: "#ecfdf5", fg: "#1c1917", subFg: "#65867a", border: "#1c1917", accent: "#0891b2" },
+      { key: "lavender", label: "ラベンダー", bg: "#faf5ff", fg: "#1c1917", subFg: "#7e6889", border: "#1c1917", accent: "#a855f7" },
+      { key: "peach", label: "ピーチ", bg: "#fff7ed", fg: "#1c1917", subFg: "#9a6b48", border: "#1c1917", accent: "#ea580c" },
+    ],
+  },
 };
 
 export const THEMES = themes;
@@ -138,6 +200,7 @@ export const FONT_STACKS: Record<FontKey, string> = {
   round: '"Klee One", "Hiragino Maru Gothic ProN", "M PLUS Rounded 1c", system-ui, sans-serif',
   display: '"Cormorant Garamond", "Shippori Mincho", "Hiragino Mincho ProN", serif',
   mono: '"JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+  script: '"Pinyon Script", "Allura", "Great Vibes", "Brush Script MT", cursive',
 };
 
 export function getTheme(themeKey: string): Theme {

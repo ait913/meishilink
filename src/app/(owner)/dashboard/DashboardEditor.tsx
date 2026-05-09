@@ -249,6 +249,7 @@ export function DashboardEditor({ card, publicUrl, baseUrl, stats }: Props) {
                     <option value="round">round (丸ゴ)</option>
                     <option value="display">display (Cormorant)</option>
                     <option value="mono">mono (JetBrains Mono)</option>
+                    <option value="script">script (筆記体)</option>
                   </select>
                 </label>
               </div>
