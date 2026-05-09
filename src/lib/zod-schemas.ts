@@ -36,6 +36,7 @@ export const CardInputSchema = z
     fontKey: z.enum(["sans", "serif", "mincho", "gothic", "round", "display", "mono"]),
     accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
     isPublished: z.boolean(),
+    isPrivate: z.boolean().optional(),
   })
   .refine(
     (data) => Boolean((data.displayName ?? "").trim() || (data.lastName ?? "").trim() || (data.firstName ?? "").trim()),
@@ -90,6 +91,7 @@ export const defaultCardInput: CardInput = {
   fontKey: "sans",
   accentColor: "#111111",
   isPublished: true,
+  isPrivate: false,
 };
 
 /** 表示用フルネーム計算: displayName 優先、なければ lastName + firstName を結合 */

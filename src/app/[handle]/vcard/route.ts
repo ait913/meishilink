@@ -1,31 +1,35 @@
 import { permanentRedirect } from "next/navigation";
 
+import { resolvePublicCard } from "@/lib/exchange-token";
 import { normalizeHandle } from "@/lib/handle";
-import { prisma } from "@/lib/prisma";
 import { buildVcard } from "@/lib/vcard";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ handle: string }> },
-): Promise<Response> {  const { handle: raw } = await params;
+): Promise<Response> {
+  const { handle: raw } = await params;
   const normalized = normalizeHandle(raw);
   if (!normalized) {
     return new Response("Not Found", { status: 404 });
   }
 
-  const card = await prisma.card.findUnique({
-    where: { handle: normalized },
-  });
-  if (!card || !card.isPublished) {
+  const url = new URL(req.url);
+  const token = url.searchParams.get("t");
+
+  const card = await resolvePublicCard(normalized, token);
+  if (!card) {
     return new Response("Not Found", { status: 404 });
   }
 
   if (raw !== normalized) {
-    permanentRedirect(`/${normalized}/vcard`);
+    const suffix = token ? `?t=${encodeURIComponent(token)}` : "";
+    permanentRedirect(`/${normalized}/vcard${suffix}`);
   }
 
   const baseUrl = process.env.PUBLIC_BASE_URL ?? "http://localhost:3000";
   const vcard = buildVcard({
+    displayName: card.displayName,
     lastName: card.lastName,
     firstName: card.firstName,
     lastNameKana: card.lastNameKana,
@@ -50,4 +54,3 @@ export async function GET(
     },
   });
 }
-

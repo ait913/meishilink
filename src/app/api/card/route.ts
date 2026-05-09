@@ -28,6 +28,9 @@ function emptyToNull(value?: string | null) {
 function sanitizeInput(input: Record<string, unknown>) {
   return {
     ...input,
+    displayName: emptyToNull(input.displayName as string | null | undefined),
+    lastName: emptyToNull(input.lastName as string | null | undefined),
+    firstName: emptyToNull(input.firstName as string | null | undefined),
     lastNameKana: emptyToNull(input.lastNameKana as string | null | undefined),
     firstNameKana: emptyToNull(input.firstNameKana as string | null | undefined),
     company: emptyToNull(input.company as string | null | undefined),
