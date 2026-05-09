@@ -40,7 +40,7 @@ export function PrintClient({ card }: { card: PublicCardViewModel }) {
             </div>
           ) : (
             <div className="print-a4-grid">
-              {Array.from({ length: 10 }).map((_, index) => (
+              {Array.from({ length: 9 }).map((_, index) => (
                 <CardPreview card={card} compact key={index} />
               ))}
             </div>
