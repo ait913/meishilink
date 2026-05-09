@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  card          Card?
+  createdAt     DateTime  @default(now())
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @id
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Card {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  handle        String   @unique
+  lastName      String
+  firstName     String
+  lastNameKana  String?
+  firstNameKana String?
+  company       String?
+  department    String?
+  jobTitle      String?
+  phone         String?
+  email         String?
+  postalCode    String?
+  address       String?
+  websiteUrl    String?
+  logoPath      String?
+  poem          String?
+  profile       String?
+  snsLinks      String?
+  themeKey      String   @default("minimal")
+  fontKey       String   @default("sans")
+  accentColor   String   @default("#111111")
+  isPublished   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  hits          Hit[]
+
+  @@index([handle])
+}
+
+model Hit {
+  id      Int      @id @default(autoincrement())
+  cardId  String
+  ts      DateTime @default(now())
+  referer String?
+  uaClass String?
+  country String?
+  card    Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId, ts])
+}
+
