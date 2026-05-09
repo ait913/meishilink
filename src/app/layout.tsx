@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
+import { ToastProvider } from "@/components/ui/Toast";
+
 import "@/app/globals.css";
 
 const baseUrl = process.env.PUBLIC_BASE_URL ?? "https://meishilink.appily.run";
@@ -91,7 +93,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html lang="ja">
       <body className="app-shell font-sans text-neutral-950 antialiased">
-        {children}
+        <ToastProvider>{children}</ToastProvider>
         <script
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
           type="application/ld+json"

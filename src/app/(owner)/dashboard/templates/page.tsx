@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { PublicCard } from "@/app/[handle]/PublicCard";
 import { selectThemeAction } from "@/app/(owner)/dashboard/actions";
-import { Button } from "@/components/ui/Button";
+import { SelectThemeButton } from "@/app/(owner)/dashboard/templates/SelectThemeButton";
 import { prisma } from "@/lib/prisma";
 import { THEMES } from "@/lib/theme";
 import { getDisplayName } from "@/lib/zod-schemas";
@@ -58,9 +58,7 @@ export default async function TemplatesPage() {  const session = await auth();
                   await selectThemeAction(theme.key);
                 }}
               >
-                <Button type="submit" variant={card.themeKey === theme.key ? "primary" : "secondary"}>
-                  {card.themeKey === theme.key ? "選択中" : "このテーマにする"}
-                </Button>
+                <SelectThemeButton active={card.themeKey === theme.key} />
               </form>
             </div>
             <PublicCard

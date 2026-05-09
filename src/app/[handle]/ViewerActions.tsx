@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { MoreModal } from "@/app/[handle]/MoreModal";
+import { ExchangeQuickDialog } from "@/app/(owner)/dashboard/ExchangeQuickDialog";
 import { Button } from "@/components/ui/Button";
 import { db } from "@/lib/dexie";
 import { SavedContactSchema } from "@/lib/zod-schemas";
@@ -25,12 +26,15 @@ type Props = {
   snsLinks: Array<{ label: string; url: string }>;
   isLoggedIn: boolean;
   isOwner: boolean;
+  isPrivate: boolean;
+  baseUrl: string;
   vcardHref: string;
 };
 
 export function ViewerActions(props: Props) {
   const [savedState, setSavedState] = useState<"none" | "saved" | "error">("none");
   const [open, setOpen] = useState(false);
+  const [exchangeOpen, setExchangeOpen] = useState(false);
   const hasMore = Boolean(props.poem || props.profile || props.snsLinks.length > 0);
 
   useEffect(() => {
@@ -113,12 +117,13 @@ export function ViewerActions(props: Props) {
               ダッシュボード
             </Link>
             {props.isOwner ? (
-              <Link
+              <button
                 className="inline-flex min-h-9 items-center rounded-full bg-neutral-950 px-3 text-white hover:bg-neutral-800"
-                href="/dashboard?tab=exchange"
+                onClick={() => setExchangeOpen(true)}
+                type="button"
               >
-                交換する
-              </Link>
+                🔁 交換する
+              </button>
             ) : null}
           </>
         ) : (
@@ -132,6 +137,15 @@ export function ViewerActions(props: Props) {
       </div>
 
       <MoreModal onClose={() => setOpen(false)} open={open} poem={props.poem} profile={props.profile} snsLinks={props.snsLinks} />
+      {props.isOwner ? (
+        <ExchangeQuickDialog
+          baseUrl={props.baseUrl}
+          handle={props.handle}
+          isPrivate={props.isPrivate}
+          onClose={() => setExchangeOpen(false)}
+          open={exchangeOpen}
+        />
+      ) : null}
     </div>
   );
 }

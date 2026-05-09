@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { startTransition, useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useFieldArray, useForm } from "react-hook-form";
 
@@ -9,7 +9,9 @@ import { CardPreview } from "@/components/card/CardPreview";
 import type { PublicCardViewModel } from "@/components/card/types";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
+import { useToast } from "@/components/ui/Toast";
 import { ExchangePanel } from "@/app/(owner)/dashboard/ExchangePanel";
+import { ExchangeQuickDialog } from "@/app/(owner)/dashboard/ExchangeQuickDialog";
 import { StatsPanel } from "@/app/(owner)/dashboard/StatsPanel";
 import { updateCardAction } from "@/app/(owner)/dashboard/actions";
 import { humanizeError } from "@/lib/error-messages";
@@ -41,16 +43,18 @@ type TabKey = "edit" | "exchange" | "stats";
 export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const toast = useToast();
   const initialTab: TabKey = (() => {
     const t = searchParams.get("tab");
     if (t === "exchange" || t === "stats") return t;
     return "edit";
   })();
   const [tab, setTab] = useState<TabKey>(initialTab);
-  const [saveMessage, setSaveMessage] = useState("");
-  const [uploadMessage, setUploadMessage] = useState("");
+  const [savePending, startSaveTransition] = useTransition();
+  const [uploadPending, startUploadTransition] = useTransition();
   const [logoPath, setLogoPath] = useState(card.logoPath ?? "");
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [exchangeOpen, setExchangeOpen] = useState(false);
 
   const form = useForm<CardInput>({
     resolver: zodResolver(CardInputSchema),
@@ -97,41 +101,44 @@ export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats
     snsLinks: watched.snsLinks ?? [],
   };
 
-  async function onSave(values: CardInput) {
-    setSaveMessage("");
-    const result = await updateCardAction(values);
-    if (!result.ok) {
-      setSaveMessage(humanizeError(result.error, "保存に失敗しました。時間をおいてもう一度お試しください。"));
-      return;
-    }
-    setSaveMessage("保存しました");
-    router.refresh();
+  function onSave(values: CardInput) {
+    startSaveTransition(async () => {
+      const result = await updateCardAction(values);
+      if (!result.ok) {
+        toast.push(humanizeError(result.error, "保存に失敗しました。"), "error");
+        return;
+      }
+      toast.push("保存しました", "success");
+      router.refresh();
+    });
   }
 
-  async function uploadLogo() {
+  function uploadLogo() {
     if (!logoFile) {
-      setUploadMessage("ファイルを選択してください");
+      toast.push("ファイルを選択してください", "info");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", logoFile);
-    const response = await fetch("/api/card/logo", {
-      method: "POST",
-      body: formData,
+    startUploadTransition(async () => {
+      const formData = new FormData();
+      formData.append("file", logoFile);
+      const response = await fetch("/api/card/logo", {
+        method: "POST",
+        body: formData,
+      });
+      const data = (await response.json().catch(() => ({ error: "upload failed" }))) as {
+        logoPath?: string;
+        error?: string;
+      };
+      if (!response.ok || !data.logoPath) {
+        toast.push(humanizeError(data.error, "アップロードに失敗しました。"), "error");
+        return;
+      }
+
+      setLogoPath(data.logoPath);
+      toast.push("ロゴを更新しました", "success");
+      router.refresh();
     });
-    const data = (await response.json().catch(() => ({ error: "upload failed" }))) as {
-      logoPath?: string;
-      error?: string;
-    };
-    if (!response.ok || !data.logoPath) {
-      setUploadMessage(humanizeError(data.error, "アップロードに失敗しました。時間をおいてもう一度お試しください。"));
-      return;
-    }
-
-    setLogoPath(data.logoPath);
-    setUploadMessage("ロゴを更新しました");
-    router.refresh();
   }
 
   const tabs = [
@@ -149,6 +156,7 @@ export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats
             <h1 className="text-3xl font-semibold">/{card.handle}</h1>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button onClick={() => setExchangeOpen(true)}>🔁 交換する</Button>
             {tabs.map((item) => (
               <Button key={item.key} onClick={() => setTab(item.key)} variant={tab === item.key ? "primary" : "secondary"}>
                 {item.label}
@@ -166,7 +174,7 @@ export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats
 
       {tab === "edit" ? (
         <div className="dashboard-grid">
-          <form className="space-y-5 rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-lg shadow-neutral-200/60" onSubmit={form.handleSubmit((values) => startTransition(() => void onSave(values)))}>
+          <form className="space-y-5 rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-lg shadow-neutral-200/60" onSubmit={form.handleSubmit(onSave)}>
             <Input
               error={form.formState.errors.displayName?.message}
               label="表示名 (必須) ─ ニックネーム / 氏名 / 屋号"
@@ -315,16 +323,14 @@ export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats
                     type="file"
                   />
                 </label>
-                <Button onClick={() => void uploadLogo()} type="button" variant="secondary">
+                <Button loading={uploadPending} onClick={uploadLogo} type="button" variant="secondary">
                   ロゴをアップロード
                 </Button>
               </div>
-              {uploadMessage ? <p className="text-sm text-neutral-600">{uploadMessage}</p> : null}
             </div>
 
-            {saveMessage ? <p className="text-sm text-neutral-600">{saveMessage}</p> : null}
-            <Button fullWidth type="submit">
-              保存
+            <Button fullWidth loading={savePending} type="submit">
+              {savePending ? "保存中..." : "保存"}
             </Button>
           </form>
 
@@ -346,6 +352,14 @@ export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats
         />
       ) : null}
       {tab === "stats" ? <StatsPanel stats={stats} /> : null}
+
+      <ExchangeQuickDialog
+        baseUrl={baseUrl}
+        handle={card.handle}
+        isPrivate={Boolean(watched.isPrivate ?? card.isPrivate)}
+        onClose={() => setExchangeOpen(false)}
+        open={exchangeOpen}
+      />
     </div>
   );
 }

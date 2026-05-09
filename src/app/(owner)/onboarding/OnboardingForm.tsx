@@ -227,7 +227,7 @@ export function OnboardingForm({ baseHost = "meishilink.appily.run" }: { baseHos
         </label>
 
         {submitError ? <p className="text-sm text-red-600">{submitError}</p> : null}
-        <Button disabled={pending || handleStatus !== "available"} fullWidth type="submit">
+        <Button disabled={handleStatus !== "available"} fullWidth loading={pending} type="submit">
           {pending ? "作成中..." : "名刺を作成"}
         </Button>
       </form>

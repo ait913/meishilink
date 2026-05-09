@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { useToast } from "@/components/ui/Toast";
 import { humanizeError } from "@/lib/error-messages";
 
 type Token = {
@@ -33,10 +34,10 @@ function buildShareUrl(baseUrl: string, handle: string, token?: string | null) {
 }
 
 export function ExchangePanel({ baseUrl, handle, isPrivate, initialTokens }: Props) {
+  const toast = useToast();
   const [tokens, setTokens] = useState<Token[]>(initialTokens);
   const [activeTokenId, setActiveTokenId] = useState<string | null>(initialTokens.find((t) => !t.disabled)?.id ?? null);
   const [labelInput, setLabelInput] = useState("");
-  const [feedback, setFeedback] = useState("");
   const [pending, startTransition] = useTransition();
   const [modalOpen, setModalOpen] = useState(false);
   const [qrPng, setQrPng] = useState<string | null>(null);
@@ -72,7 +73,6 @@ export function ExchangePanel({ baseUrl, handle, isPrivate, initialTokens }: Pro
   }
 
   function issueToken(label?: string) {
-    setFeedback("");
     startTransition(async () => {
       const res = await fetch("/api/tokens", {
         method: "POST",
@@ -81,13 +81,14 @@ export function ExchangePanel({ baseUrl, handle, isPrivate, initialTokens }: Pro
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string } & Token;
       if (!res.ok) {
-        setFeedback(humanizeError(data.error, "トークン発行に失敗しました。"));
+        toast.push(humanizeError(data.error, "トークン発行に失敗しました。"), "error");
         return;
       }
       setTokens((prev) => [data as Token, ...prev]);
       setActiveTokenId((data as Token).id);
       setLabelInput("");
       setModalOpen(true);
+      toast.push("交換トークンを発行しました", "success");
     });
   }
 
@@ -96,11 +97,12 @@ export function ExchangePanel({ baseUrl, handle, isPrivate, initialTokens }: Pro
     startTransition(async () => {
       const res = await fetch(`/api/tokens/${id}`, { method: "DELETE" });
       if (!res.ok) {
-        setFeedback("失効に失敗しました。");
+        toast.push("失効に失敗しました。", "error");
         return;
       }
       await refresh();
       if (activeTokenId === id) setActiveTokenId(null);
+      toast.push("トークンを失効しました", "success");
     });
   }
 
@@ -141,7 +143,7 @@ export function ExchangePanel({ baseUrl, handle, isPrivate, initialTokens }: Pro
               placeholder="例: tech-meetup-2026 / 8月オフ会"
               value={labelInput}
             />
-            <Button disabled={pending} onClick={() => issueToken(labelInput)} variant="secondary">
+            <Button loading={pending} onClick={() => issueToken(labelInput)} variant="secondary">
               発行
             </Button>
           </div>
@@ -180,7 +182,6 @@ export function ExchangePanel({ baseUrl, handle, isPrivate, initialTokens }: Pro
         </div>
       ) : null}
 
-      {feedback ? <p className="text-sm text-red-600">{feedback}</p> : null}
 
       {/* QR モーダル */}
       {modalOpen ? (
