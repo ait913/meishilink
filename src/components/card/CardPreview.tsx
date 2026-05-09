@@ -5,13 +5,18 @@ import Image from "next/image";
 
 import { getFontStack, getPalette, getTheme } from "@/lib/theme";
 import type { PublicCardViewModel } from "@/components/card/types";
+import { DoodleCard } from "@/components/card/DoodleCard";
 import { EngineerCard } from "@/components/card/EngineerCard";
+import { GradientCard } from "@/components/card/GradientCard";
+import { LeatherCard } from "@/components/card/LeatherCard";
 import { LetterpressCard } from "@/components/card/LetterpressCard";
 import { MinchoCard } from "@/components/card/MinchoCard";
 import { MinimalCard } from "@/components/card/MinimalCard";
 import { MonoCard } from "@/components/card/MonoCard";
 import { NavyCard } from "@/components/card/NavyCard";
 import { SakuraCard } from "@/components/card/SakuraCard";
+import { StickerCard } from "@/components/card/StickerCard";
+import { VaporCard } from "@/components/card/VaporCard";
 import { WarmCard } from "@/components/card/WarmCard";
 import { WashiCard } from "@/components/card/WashiCard";
 
@@ -61,6 +66,16 @@ export function CardPreview({ card, compact = false }: PreviewProps) {
         return <LetterpressCard {...common} />;
       case "engineer":
         return <EngineerCard {...common} />;
+      case "leather":
+        return <LeatherCard {...common} />;
+      case "gradient":
+        return <GradientCard {...common} />;
+      case "sticker":
+        return <StickerCard {...common} />;
+      case "vapor":
+        return <VaporCard {...common} />;
+      case "doodle":
+        return <DoodleCard {...common} />;
       default:
         return <MinimalCard {...common} />;
     }

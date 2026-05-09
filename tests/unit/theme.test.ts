@@ -28,16 +28,21 @@ const themeModule = await importThemeModule();
 const describeTheme = themeModule ? describe : describe.skip;
 
 describeTheme("theme spec", () => {
-  it("exposes the 9 theme keys", () => {
+  it("exposes 14 theme keys", () => {
     expect(Object.keys(themeModule?.THEMES ?? {}).sort()).toEqual(
       [
+        "doodle",
         "engineer",
+        "gradient",
+        "leather",
         "letterpress",
         "mincho",
         "minimal",
         "mono",
         "navy",
         "sakura",
+        "sticker",
+        "vapor",
         "warm",
         "washi",
       ].sort(),
@@ -54,7 +59,7 @@ describeTheme("theme spec", () => {
 
   it("defines the documented font stack keys", () => {
     expect(Object.keys(themeModule?.FONT_STACKS ?? {}).sort()).toEqual(
-      ["display", "gothic", "mincho", "mono", "round", "sans", "serif"].sort(),
+      ["display", "gothic", "mincho", "mono", "round", "sans", "script", "serif"].sort(),
     );
   });
 });
