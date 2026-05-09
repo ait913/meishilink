@@ -1,8 +1,23 @@
-export function MeishiLogo() {
+import Image from "next/image";
+
+type Props = {
+  size?: number;
+  className?: string;
+};
+
+export function MeishiLogo({ size = 40, className = "" }: Props) {
   return (
-    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#111111,#4b5563)] text-sm font-semibold text-white">
-      ML
+    <span
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200 ${className}`}
+      style={{ width: size, height: size }}
+    >
+      <Image
+        alt="MeishiLink"
+        height={size}
+        src="/brand/logo-master.png"
+        width={size}
+        unoptimized
+      />
     </span>
   );
 }
-
