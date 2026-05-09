@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
+import { auth } from "@/auth";
 import { PublicCard } from "@/app/[handle]/PublicCard";
 import { ViewerActions } from "@/app/[handle]/ViewerActions";
+import { ViewerNav } from "@/components/ViewerNav";
 import { resolvePublicCard } from "@/lib/exchange-token";
 import { normalizeHandle } from "@/lib/handle";
 import { prisma } from "@/lib/prisma";
@@ -104,9 +106,19 @@ export default async function Page({
   const fullName = getDisplayName(card) || card.handle;
   const publicUrl = `${process.env.PUBLIC_BASE_URL ?? "http://localhost:3000"}/${card.handle}${token ? `?t=${encodeURIComponent(token)}` : ""}`;
 
+  const session = await auth();
+  const viewerEmail = session?.user?.email ?? null;
+  const isLoggedIn = Boolean(session?.user);
+  const owner = viewerEmail
+    ? await prisma.user.findUnique({ where: { email: viewerEmail }, select: { id: true } })
+    : null;
+  const isOwner = Boolean(owner && owner.id === card.userId);
+
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl items-center px-6 py-10">
-      <div className="w-full space-y-6">
+    <>
+      <ViewerNav isLoggedIn={isLoggedIn} isOwner={isOwner} />
+      <main className="mx-auto flex min-h-screen w-full max-w-3xl items-center px-6 py-10">
+        <div className="w-full space-y-6">
         <PublicCard
           card={{
             ...card,
@@ -133,6 +145,7 @@ export default async function Page({
           />
         </section>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
