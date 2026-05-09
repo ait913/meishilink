@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { startTransition, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useFieldArray, useForm } from "react-hook-form";
 
 import { CardPreview } from "@/components/card/CardPreview";
@@ -39,7 +39,13 @@ type TabKey = "edit" | "exchange" | "stats";
 
 export function DashboardEditor({ card, publicUrl, baseUrl, initialTokens, stats }: Props) {
   const router = useRouter();
-  const [tab, setTab] = useState<TabKey>("edit");
+  const searchParams = useSearchParams();
+  const initialTab: TabKey = (() => {
+    const t = searchParams.get("tab");
+    if (t === "exchange" || t === "stats") return t;
+    return "edit";
+  })();
+  const [tab, setTab] = useState<TabKey>(initialTab);
   const [saveMessage, setSaveMessage] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
   const [logoPath, setLogoPath] = useState(card.logoPath ?? "");
