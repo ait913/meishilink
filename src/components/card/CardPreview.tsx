@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
 
 import { getFontStack, getTheme } from "@/lib/theme";
@@ -18,15 +18,11 @@ export type PreviewProps = {
 
 export function CardPreview({ card, compact = false }: PreviewProps) {
   const theme = getTheme(card.themeKey);
-  const logo = card.logoPath ? (
+  const logo: ReactNode = card.logoPath ? (
     <div className="relative h-12 w-12 overflow-hidden rounded-full border border-white/30 bg-white/10">
       <Image alt={`${card.lastName}${card.firstName} のロゴ`} className="object-cover" fill sizes="48px" src={card.logoPath} unoptimized />
     </div>
-  ) : (
-    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-current/30 text-[9px] uppercase tracking-[0.2em] text-current/60">
-      Logo
-    </div>
-  );
+  ) : null;
 
   const common = {
     card,
