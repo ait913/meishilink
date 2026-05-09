@@ -114,6 +114,7 @@ export default async function Page({
   const isOwner = Boolean(owner && owner.id === card.userId);
 
   const vcardHref = `/${card.handle}/vcard${token ? `?t=${encodeURIComponent(token)}` : ""}`;
+  const baseUrl = process.env.PUBLIC_BASE_URL ?? "http://localhost:3000";
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-3xl items-center px-6 py-10">
@@ -128,12 +129,14 @@ export default async function Page({
         <section className="rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-lg shadow-neutral-200/60">
           <ViewerActions
             accentColor={card.accentColor}
+            baseUrl={baseUrl}
             company={card.company}
             email={card.email}
             fullName={fullName}
             handle={card.handle}
             isLoggedIn={isLoggedIn}
             isOwner={isOwner}
+            isPrivate={card.isPrivate}
             jobTitle={card.jobTitle}
             logoUrl={card.logoPath}
             phone={card.phone}
