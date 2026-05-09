@@ -12,6 +12,7 @@ import { Input, Textarea } from "@/components/ui/Input";
 import { QrPanel } from "@/app/(owner)/dashboard/QrPanel";
 import { StatsPanel } from "@/app/(owner)/dashboard/StatsPanel";
 import { updateCardAction } from "@/app/(owner)/dashboard/actions";
+import { humanizeError } from "@/lib/error-messages";
 import type { StatsResponse } from "@/lib/stats";
 import { CardInputSchema, type CardInput } from "@/lib/zod-schemas";
 
@@ -70,7 +71,7 @@ export function DashboardEditor({ card, publicUrl, qrPngDataUrl, qrSvgString, st
     setSaveMessage("");
     const result = await updateCardAction(values);
     if (!result.ok) {
-      setSaveMessage(result.error);
+      setSaveMessage(humanizeError(result.error, "保存に失敗しました。時間をおいてもう一度お試しください。"));
       return;
     }
     setSaveMessage("保存しました");
@@ -89,12 +90,12 @@ export function DashboardEditor({ card, publicUrl, qrPngDataUrl, qrSvgString, st
       method: "POST",
       body: formData,
     });
-    const data = (await response.json().catch(() => ({ error: "アップロードに失敗しました" }))) as {
+    const data = (await response.json().catch(() => ({ error: "upload failed" }))) as {
       logoPath?: string;
       error?: string;
     };
     if (!response.ok || !data.logoPath) {
-      setUploadMessage(data.error ?? "アップロードに失敗しました");
+      setUploadMessage(humanizeError(data.error, "アップロードに失敗しました。時間をおいてもう一度お試しください。"));
       return;
     }
 

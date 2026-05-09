@@ -7,11 +7,12 @@ import { useFieldArray, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
+import { humanizeError } from "@/lib/error-messages";
 import { defaultCardInput, type CardInput, CardInputSchema } from "@/lib/zod-schemas";
 
 type HandleStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
-export function OnboardingForm() {
+export function OnboardingForm({ baseHost = "meishilink.appily.run" }: { baseHost?: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [handleValue, setHandleValue] = useState("");
@@ -81,8 +82,8 @@ export function OnboardingForm() {
         return;
       }
 
-      const data = (await response.json().catch(() => ({ error: "保存に失敗しました" }))) as { error?: string };
-      setSubmitError(data.error ?? "保存に失敗しました");
+      const data = (await response.json().catch(() => ({ error: "create failed" }))) as { error?: string };
+      setSubmitError(humanizeError(data.error, "保存に失敗しました。時間をおいてもう一度お試しください。"));
     });
   }
 
@@ -99,7 +100,7 @@ export function OnboardingForm() {
           <span className="font-medium">公開 URL</span>
           <div className="flex flex-col gap-3 md:flex-row">
             <div className="flex min-h-11 items-center rounded-2xl border border-neutral-200 bg-white px-4 text-neutral-500">
-              meishi.appily.run/
+              {baseHost}/
             </div>
             <input
               className="min-h-11 flex-1 rounded-2xl border border-neutral-300 bg-white px-4 text-neutral-950"

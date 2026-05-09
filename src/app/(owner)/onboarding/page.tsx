@@ -18,9 +18,18 @@ export default async function OnboardingPage() {  const session = await auth();
     redirect("/dashboard");
   }
 
+  const baseUrl = process.env.PUBLIC_BASE_URL ?? "https://meishilink.appily.run";
+  const baseHost = (() => {
+    try {
+      return new URL(baseUrl).host;
+    } catch {
+      return "meishilink.appily.run";
+    }
+  })();
+
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
-      <OnboardingForm />
+      <OnboardingForm baseHost={baseHost} />
     </main>
   );
 }
