@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { auth, signIn } from "@/auth";
+
+export const metadata: Metadata = {
+  title: "ログイン",
+  description: "メールまたは Google アカウントで MeishiLink にログインします。",
+};
 
 export default async function LoginPage() {  const session = await auth();
   if (session?.user) {

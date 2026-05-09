@@ -1,9 +1,55 @@
+import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { PublicCard } from "@/app/[handle]/PublicCard";
 import { ViewerActions } from "@/app/[handle]/ViewerActions";
 import { normalizeHandle } from "@/lib/handle";
 import { prisma } from "@/lib/prisma";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ handle: string }>;
+}): Promise<Metadata> {
+  const { handle: raw } = await params;
+  const normalized = normalizeHandle(raw);
+  if (!normalized) return {};
+  const card = await prisma.card.findUnique({
+    where: { handle: normalized },
+    select: {
+      lastName: true,
+      firstName: true,
+      company: true,
+      jobTitle: true,
+      department: true,
+      isPublished: true,
+    },
+  });
+  if (!card || !card.isPublished) return {};
+
+  const fullName = `${card.lastName} ${card.firstName}`;
+  const orgLine = [card.company, card.department, card.jobTitle].filter(Boolean).join(" / ");
+  const description = orgLine
+    ? `${fullName} の Web 名刺。${orgLine}。MeishiLink で QR・vCard で受け取れます。`
+    : `${fullName} の Web 名刺。MeishiLink で QR・vCard で受け取れます。`;
+
+  return {
+    title: `${fullName} の Web 名刺`,
+    description,
+    openGraph: {
+      type: "profile",
+      title: `${fullName} の Web 名刺 — MeishiLink`,
+      description,
+      url: `/${normalized}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${fullName} の Web 名刺 — MeishiLink`,
+      description,
+    },
+    alternates: { canonical: `/${normalized}` },
+  };
+}
 
 function parseSnsLinks(value: string | null) {
   if (!value) {

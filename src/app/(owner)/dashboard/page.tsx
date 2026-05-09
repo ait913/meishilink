@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { auth, signOut } from "@/auth";
+
+export const metadata: Metadata = {
+  title: "ダッシュボード",
+  robots: { index: false, follow: false },
+};
 import { DashboardEditor } from "@/app/(owner)/dashboard/DashboardEditor";
 import { generateQrPngDataUrl, generateQrSvgString } from "@/lib/qr";
 import { prisma } from "@/lib/prisma";
