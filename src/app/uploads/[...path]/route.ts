@@ -29,6 +29,7 @@ export async function GET(
       headers: {
         "Content-Type": CONTENT_TYPES[path.extname(target)] ?? "application/octet-stream",
         "Cache-Control": "public, max-age=300",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   } catch {
