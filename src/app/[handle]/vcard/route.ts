@@ -45,12 +45,18 @@ export async function GET(
     logoUrl: card.logoPath ? `${baseUrl}${card.logoPath}` : null,
   });
 
+  // private card (token 付き) は CDN/プロキシに乗せない
+  const cacheControl = card.isPrivate
+    ? "private, no-store, no-cache, must-revalidate"
+    : "public, max-age=300";
+
   return new Response(vcard, {
     status: 200,
     headers: {
       "Content-Type": "text/vcard; charset=utf-8",
       "Content-Disposition": `attachment; filename="${card.handle}.vcf"`,
-      "Cache-Control": "public, max-age=300",
+      "Cache-Control": cacheControl,
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }

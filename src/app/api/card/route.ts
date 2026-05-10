@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 
 import { auth } from "@/auth";
 import { isReservedHandle, isValidHandle, normalizeHandle } from "@/lib/handle";
+import { isAllowedOrigin } from "@/lib/origin-check";
 import { prisma } from "@/lib/prisma";
 import { CardInputSchema } from "@/lib/zod-schemas";
 
@@ -42,6 +43,9 @@ function sanitizeInput(input: Record<string, unknown>) {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  if (!isAllowedOrigin(req)) {
+    return Response.json({ error: "forbidden" }, { status: 403 });
+  }
   const session = await auth();
   const userId = await resolveUserId(session);
   if (!userId) {
@@ -92,6 +96,9 @@ export async function POST(req: Request): Promise<Response> {
 }
 
 export async function PUT(req: Request): Promise<Response> {
+  if (!isAllowedOrigin(req)) {
+    return Response.json({ error: "forbidden" }, { status: 403 });
+  }
   const session = await auth();
   const userId = await resolveUserId(session);
   if (!userId) {

@@ -1,0 +1,29 @@
+node_modules
+.next
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+
+# 開発時の SQLite 実体 / journal
+prisma/dev.db
+prisma/dev.db-journal
+prisma/dev.db-shm
+prisma/dev.db-wal
+
+# 開発時のアップロード実体
+storage
+uploads
+
+# tooling
+*.log
+*.tsbuildinfo
+coverage
+tests
+.DS_Store
+
+# Docs / refs
+.designs
+.references
+README.md

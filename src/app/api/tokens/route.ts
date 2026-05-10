@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { generateTokenString } from "@/lib/exchange-token";
+import { isAllowedOrigin } from "@/lib/origin-check";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -45,6 +46,9 @@ export async function GET(): Promise<Response> {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  if (!isAllowedOrigin(req)) {
+    return Response.json({ error: "forbidden" }, { status: 403 });
+  }
   const session = await auth();
   const cardId = await resolveCardId(session);
   if (!cardId) return Response.json({ error: "unauthorized" }, { status: 401 });
