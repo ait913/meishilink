@@ -8,7 +8,7 @@ export default async function VerifyRequestPage() {
         <h1 className="mt-2 text-3xl font-semibold">受信トレイを確認してください</h1>
         <p className="mt-4 text-neutral-600">
           ご入力いただいたメールアドレス宛にログイン用のリンクを送信しました。
-          メール内のボタンをクリックするとログインが完了します。リンクの有効期限は 24 時間です。
+          メール内のボタンをクリックするとログインが完了します。リンクの有効期限は 30 分です。
         </p>
         <p className="mt-3 text-sm text-neutral-500">
           数分待っても届かない場合は、迷惑メールフォルダもご確認ください。

@@ -5,16 +5,11 @@ import { isReservedHandle, isValidHandle, normalizeHandle } from "@/lib/handle";
 import { prisma } from "@/lib/prisma";
 import { CardInputSchema } from "@/lib/zod-schemas";
 
-async function resolveUserId(session: { user?: { id?: string | null; email?: string | null } } | null) {
+async function resolveUserId(session: { user?: { id?: string | null } } | null) {
   const claimed = session?.user?.id ?? null;
-  if (claimed) {
-    const hit = await prisma.user.findUnique({ where: { id: claimed }, select: { id: true } });
-    if (hit) return hit.id;
-  }
-  const email = session?.user?.email ?? null;
-  if (!email) return null;
-  const byEmail = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-  return byEmail?.id ?? null;
+  if (!claimed) return null;
+  const hit = await prisma.user.findUnique({ where: { id: claimed }, select: { id: true } });
+  return hit?.id ?? null;
 }
 
 function emptyToNull(value?: string | null) {

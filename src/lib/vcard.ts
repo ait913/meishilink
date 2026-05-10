@@ -1,7 +1,8 @@
 function escapeValue(value: string): string {
+  // CRLF/CR/LF を全て除去 (vCard CRLF injection 対策)
   return value
+    .replace(/[\r\n]+/g, " ")
     .replace(/\\/g, "\\\\")
-    .replace(/\n/g, "\\n")
     .replace(/;/g, "\\;")
     .replace(/,/g, "\\,");
 }

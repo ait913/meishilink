@@ -1,20 +1,12 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-async function resolveCardId(session: { user?: { id?: string | null; email?: string | null } } | null) {
+async function resolveCardId(session: { user?: { id?: string | null } } | null) {
   const claimed = session?.user?.id ?? null;
-  if (claimed) {
-    const userHit = await prisma.user.findUnique({ where: { id: claimed }, select: { id: true } });
-    if (userHit) {
-      const card = await prisma.card.findUnique({ where: { userId: userHit.id }, select: { id: true } });
-      return card?.id ?? null;
-    }
-  }
-  const email = session?.user?.email ?? null;
-  if (!email) return null;
-  const userByEmail = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-  if (!userByEmail) return null;
-  const card = await prisma.card.findUnique({ where: { userId: userByEmail.id }, select: { id: true } });
+  if (!claimed) return null;
+  const userHit = await prisma.user.findUnique({ where: { id: claimed }, select: { id: true } });
+  if (!userHit) return null;
+  const card = await prisma.card.findUnique({ where: { userId: userHit.id }, select: { id: true } });
   return card?.id ?? null;
 }
 
