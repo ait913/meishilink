@@ -22,7 +22,7 @@ const buildMagicLinkEmail = (url: string, host: string) => {
 <body style="margin:0;padding:32px 16px;background:#f5f4ef;font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;color:#121212;">
   <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;">
     <h1 style="font-size:18px;margin:0 0 12px;">MeishiLink にログイン</h1>
-    <p style="font-size:14px;line-height:1.7;margin:0 0 24px;color:#555;">下のボタンをクリックしてサインインを完了してください。リンクは 24 時間有効です。</p>
+    <p style="font-size:14px;line-height:1.7;margin:0 0 24px;color:#555;">下のボタンをクリックしてサインインを完了してください。リンクは 30 分間有効です。</p>
     <p style="margin:0 0 24px;"><a href="${safeUrl}" style="display:inline-block;padding:12px 20px;background:#0a0a0a;color:#fff;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;">MeishiLink にログイン</a></p>
     <p style="font-size:12px;line-height:1.6;color:#888;margin:0;">ボタンが動かない場合は次の URL を直接開いてください:<br><span style="word-break:break-all;">${safeUrl}</span></p>
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
@@ -42,6 +42,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Nodemailer({
       server: { host: "smtp.resend.com", port: 465, auth: { user: "resend", pass: resendApiKey || "noop" } },
       from: fromAddress,
+      // Magic Link 有効時間 30 分 (短くして悪用窓を狭める)
+      maxAge: 30 * 60,
       async sendVerificationRequest({ identifier, url }: { identifier: string; url: string }) {
         const host = new URL(url).host;
         if (!resendApiKey) {

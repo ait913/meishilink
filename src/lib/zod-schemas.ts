@@ -7,12 +7,37 @@ export const HandleSchema = z
   .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, "英数字とハイフン、先頭末尾はハイフン不可")
   .refine((value) => !value.includes("--"), "連続ハイフン不可");
 
+/** http/https/mailto/tel のみ許可 (javascript:/data: を排除) */
+const SafeUrl = z
+  .string()
+  .url()
+  .max(500)
+  .refine(
+    (v) => {
+      try {
+        const u = new URL(v);
+        return ["http:", "https:", "mailto:", "tel:"].includes(u.protocol);
+      } catch {
+        return false;
+      }
+    },
+    { message: "http/https/mailto/tel のみ利用できます" },
+  );
+
 export const SnsLinkSchema = z.object({
-  label: z.string().min(1).max(20),
-  url: z.string().url().max(500),
+  label: z.string().min(1).max(20).regex(/^[^\r\n]+$/, "改行は使えません"),
+  url: SafeUrl,
 });
 
-const OptionalText = (max: number) => z.string().max(max).optional().or(z.literal(""));
+const NoCtrl = (max: number) =>
+  z
+    .string()
+    .max(max)
+    .regex(/^[^\r\n]*$/, "改行は使えません")
+    .optional()
+    .or(z.literal(""));
+
+const OptionalText = NoCtrl;
 
 export const CardInputSchema = z
   .object({
@@ -28,9 +53,9 @@ export const CardInputSchema = z
     email: z.string().email().max(120).optional().or(z.literal("")),
     postalCode: z.string().regex(/^[0-9]{0,3}-?[0-9]{0,4}$/).optional().or(z.literal("")),
     address: OptionalText(200),
-    websiteUrl: z.string().url().max(500).optional().or(z.literal("")),
-    poem: OptionalText(200),
-    profile: OptionalText(500),
+    websiteUrl: SafeUrl.optional().or(z.literal("")),
+    poem: z.string().max(200).optional().or(z.literal("")),
+    profile: z.string().max(500).optional().or(z.literal("")),
     snsLinks: z.array(SnsLinkSchema).max(10).optional(),
     themeKey: z.enum([
       "minimal",

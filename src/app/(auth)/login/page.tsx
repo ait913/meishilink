@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { auth, signIn } from "@/auth";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const metadata: Metadata = {
   title: "ログイン",
@@ -23,8 +25,22 @@ export default async function LoginPage() {  const session = await auth();
   async function signInWithEmail(formData: FormData) {
     "use server";
 
-    const email = String(formData.get("email") ?? "");
-    await signIn("nodemailer", { email, redirect: false });
+    const headerList = await headers();
+    const ip =
+      headerList.get("cf-connecting-ip") ??
+      headerList.get("x-real-ip") ??
+      headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "unknown";
+
+    const email = String(formData.get("email") ?? "").toLowerCase().trim();
+    const ipOk = rateLimit(`magic-ip:${ip}`, { limit: 5, windowMs: 10 * 60_000 });
+    const mailOk = email
+      ? rateLimit(`magic-mail:${email}`, { limit: 3, windowMs: 10 * 60_000 })
+      : true;
+    // 制限超過でも UX は同じ画面 (アドレス存在判定を防ぐ)
+    if (ipOk && mailOk && email) {
+      await signIn("nodemailer", { email, redirect: false });
+    }
     redirect("/verify-request");
   }
 

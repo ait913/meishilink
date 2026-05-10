@@ -42,6 +42,7 @@ export function ViewerActions(props: Props) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ handle: props.handle }),
+      referrerPolicy: "origin",
     }).catch(() => undefined);
   }, [props.handle]);
 
