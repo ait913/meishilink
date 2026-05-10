@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { isAllowedOrigin } from "@/lib/origin-check";
 import { prisma } from "@/lib/prisma";
 
 async function resolveCardId(session: { user?: { id?: string | null } } | null) {
@@ -11,9 +12,12 @@ async function resolveCardId(session: { user?: { id?: string | null } } | null) 
 }
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<Response> {
+  if (!isAllowedOrigin(req)) {
+    return Response.json({ error: "forbidden" }, { status: 403 });
+  }
   const session = await auth();
   const cardId = await resolveCardId(session);
   if (!cardId) return Response.json({ error: "unauthorized" }, { status: 401 });
