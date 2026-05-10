@@ -47,6 +47,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async sendVerificationRequest({ identifier, url }: { identifier: string; url: string }) {
         const host = new URL(url).host;
         if (!resendApiKey) {
+          if (process.env.NODE_ENV === "production") {
+            // 本番でメール配信が未設定なら絶対にトークン URL をログへ漏らさない
+            console.error("[MagicLink] RESEND_API_KEY not set in production. Refusing to deliver.");
+            throw new Error("Email delivery is not configured.");
+          }
           console.log(`[MagicLink:dev] to=${identifier} host=${host} url=${url}`);
           return;
         }
