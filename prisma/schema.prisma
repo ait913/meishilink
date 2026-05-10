@@ -24,12 +24,9 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?
-  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
   session_state     String?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -52,35 +49,35 @@ model VerificationToken {
 }
 
 model Card {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  handle        String   @unique
-  displayName   String?
-  lastName      String?
-  firstName     String?
-  lastNameKana  String?
-  firstNameKana String?
-  company       String?
-  department    String?
-  jobTitle      String?
-  phone         String?
-  email         String?
-  postalCode    String?
-  address       String?
-  websiteUrl    String?
-  logoPath      String?
-  poem          String?
-  profile       String?
-  snsLinks      String?
-  themeKey       String   @default("minimal")
+  id             String          @id @default(cuid())
+  userId         String          @unique
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  handle         String          @unique
+  displayName    String?
+  lastName       String?
+  firstName      String?
+  lastNameKana   String?
+  firstNameKana  String?
+  company        String?
+  department     String?
+  jobTitle       String?
+  phone          String?
+  email          String?
+  postalCode     String?
+  address        String?
+  websiteUrl     String?
+  logoPath       String?
+  poem           String?
+  profile        String?
+  snsLinks       String?
+  themeKey       String          @default("minimal")
   paletteKey     String?
-  fontKey        String   @default("sans")
-  accentColor    String   @default("#111111")
-  isPublished    Boolean  @default(true)
-  isPrivate      Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  fontKey        String          @default("sans")
+  accentColor    String          @default("#111111")
+  isPublished    Boolean         @default(true)
+  isPrivate      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   hits           Hit[]
   exchangeTokens ExchangeToken[]
 
@@ -91,7 +88,7 @@ model ExchangeToken {
   id         String    @id @default(cuid())
   cardId     String
   card       Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  token      String    @unique
+  tokenHash  String    @unique
   label      String?
   expiresAt  DateTime?
   disabled   Boolean   @default(false)
@@ -113,4 +110,3 @@ model Hit {
 
   @@index([cardId, ts])
 }
-

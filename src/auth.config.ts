@@ -8,6 +8,17 @@ if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      account(account) {
+        return {
+          providerAccountId: account.providerAccountId,
+          type: account.type,
+          provider: account.provider,
+          expires_at: account.expires_at,
+          token_type: account.token_type,
+          scope: account.scope,
+          session_state: account.session_state,
+        };
+      },
     }),
   );
 }

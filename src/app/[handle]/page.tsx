@@ -104,6 +104,13 @@ export default async function Page({
   const snsLinks = parseSnsLinks(card.snsLinks);
   const fullName = getDisplayName(card) || card.handle;
   const publicUrl = `${process.env.PUBLIC_BASE_URL ?? "http://localhost:3000"}/${card.handle}${token ? `?t=${encodeURIComponent(token)}` : ""}`;
+  const logoUrl = card.logoPath
+    ? card.isPrivate
+      ? token
+        ? `/u/${card.handle}/logo?t=${encodeURIComponent(token)}`
+        : null
+      : `/u/${card.handle}/logo?v=${card.updatedAt.getTime()}`
+    : null;
 
   const session = await auth();
   const viewerEmail = session?.user?.email ?? null;
@@ -123,6 +130,7 @@ export default async function Page({
           card={{
             ...card,
             fullName,
+            logoUrl,
             snsLinks,
           }}
         />
@@ -138,7 +146,7 @@ export default async function Page({
             isOwner={isOwner}
             isPrivate={card.isPrivate}
             jobTitle={card.jobTitle}
-            logoUrl={card.logoPath}
+            logoUrl={logoUrl}
             phone={card.phone}
             poem={card.poem}
             profile={card.profile}

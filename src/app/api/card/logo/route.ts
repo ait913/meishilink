@@ -27,11 +27,14 @@ export async function POST(req: Request): Promise<Response> {
 
   try {
     const logoPath = await saveLogo(session.user.id, file);
-    await prisma.card.update({
+    const card = await prisma.card.update({
       where: { userId: session.user.id },
       data: { logoPath },
+      select: { handle: true, updatedAt: true },
     });
-    return Response.json({ logoPath });
+    return Response.json({
+      logoUrl: `/u/${card.handle}/logo?v=${card.updatedAt.getTime()}`,
+    });
   } catch (error) {
     if (error instanceof Error && (error.message === "unsupported mime" || error.message === "too large")) {
       return Response.json({ error: error.message }, { status: 400 });

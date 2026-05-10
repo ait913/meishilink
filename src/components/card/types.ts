@@ -14,7 +14,7 @@ export type PublicCardViewModel = {
   postalCode?: string | null;
   address?: string | null;
   websiteUrl?: string | null;
-  logoPath?: string | null;
+  logoUrl?: string | null;
   poem?: string | null;
   profile?: string | null;
   snsLinks: Array<{ label: string; url: string }>;
@@ -24,4 +24,3 @@ export type PublicCardViewModel = {
   accentColor: string;
   isPublished: boolean;
 };
-

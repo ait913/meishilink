@@ -28,9 +28,9 @@ export type PreviewProps = {
 export function CardPreview({ card, compact = false }: PreviewProps) {
   const theme = getTheme(card.themeKey);
   const palette = getPalette(card.themeKey, card.paletteKey);
-  const logo: ReactNode = card.logoPath ? (
+  const logo: ReactNode = card.logoUrl ? (
     <div className="relative h-12 w-12 overflow-hidden rounded-full border border-white/30 bg-white/10">
-      <Image alt={card.fullName} className="object-cover" fill sizes="48px" src={card.logoPath} unoptimized />
+      <Image alt={card.fullName} className="object-cover" fill sizes="48px" src={card.logoUrl} unoptimized />
     </div>
   ) : null;
 

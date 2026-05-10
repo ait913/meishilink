@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import { generateTokenString } from "@/lib/exchange-token";
+import { generateTokenString, hashToken } from "@/lib/exchange-token";
 import { isAllowedOrigin } from "@/lib/origin-check";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
@@ -33,7 +33,6 @@ export async function GET(): Promise<Response> {
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
-      token: true,
       label: true,
       expiresAt: true,
       disabled: true,
@@ -67,17 +66,17 @@ export async function POST(req: Request): Promise<Response> {
   const expiresAt = parsed.data.expiresAt
     ? new Date(parsed.data.expiresAt)
     : new Date(Date.now() + DEFAULT_TTL_MS);
+  const token = generateTokenString();
 
   const created = await prisma.exchangeToken.create({
     data: {
       cardId,
-      token: generateTokenString(),
+      tokenHash: hashToken(token),
       label: parsed.data.label || null,
       expiresAt,
     },
     select: {
       id: true,
-      token: true,
       label: true,
       expiresAt: true,
       disabled: true,
@@ -86,5 +85,5 @@ export async function POST(req: Request): Promise<Response> {
       createdAt: true,
     },
   });
-  return Response.json(created, { status: 201 });
+  return Response.json({ ...created, token }, { status: 201 });
 }

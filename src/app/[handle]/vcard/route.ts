@@ -28,6 +28,13 @@ export async function GET(
   }
 
   const baseUrl = process.env.PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const logoUrl = card.logoPath
+    ? card.isPrivate
+      ? token
+        ? `${baseUrl}/u/${card.handle}/logo?t=${encodeURIComponent(token)}`
+        : null
+      : `${baseUrl}/u/${card.handle}/logo?v=${card.updatedAt.getTime()}`
+    : null;
   const vcard = buildVcard({
     displayName: card.displayName,
     lastName: card.lastName,
@@ -42,7 +49,7 @@ export async function GET(
     postalCode: card.postalCode,
     address: card.address,
     websiteUrl: card.websiteUrl,
-    logoUrl: card.logoPath ? `${baseUrl}${card.logoPath}` : null,
+    logoUrl,
   });
 
   // private card (token 付き) は CDN/プロキシに乗せない

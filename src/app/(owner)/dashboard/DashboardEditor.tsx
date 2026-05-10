@@ -44,7 +44,7 @@ export function DashboardEditor({ card, publicUrl, baseUrl, stats }: Props) {
   const [tab, setTab] = useState<TabKey>(initialTab);
   const [savePending, startSaveTransition] = useTransition();
   const [uploadPending, startUploadTransition] = useTransition();
-  const [logoPath, setLogoPath] = useState(card.logoPath ?? "");
+  const [logoUrl, setLogoUrl] = useState(card.logoUrl ?? "");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [exchangeOpen, setExchangeOpen] = useState(openExchangeOnMount);
 
@@ -89,7 +89,7 @@ export function DashboardEditor({ card, publicUrl, baseUrl, stats }: Props) {
     ...watched,
     fullName: getDisplayName(watched) || card.handle,
     paletteKey: selectedPaletteKey,
-    logoPath,
+    logoUrl,
     snsLinks: watched.snsLinks ?? [],
   };
 
@@ -119,15 +119,15 @@ export function DashboardEditor({ card, publicUrl, baseUrl, stats }: Props) {
         body: formData,
       });
       const data = (await response.json().catch(() => ({ error: "upload failed" }))) as {
-        logoPath?: string;
+        logoUrl?: string;
         error?: string;
       };
-      if (!response.ok || !data.logoPath) {
+      if (!response.ok || !data.logoUrl) {
         toast.push(humanizeError(data.error, "アップロードに失敗しました。"), "error");
         return;
       }
 
-      setLogoPath(data.logoPath);
+      setLogoUrl(data.logoUrl);
       toast.push("ロゴを更新しました", "success");
       router.refresh();
     });
@@ -347,4 +347,3 @@ export function DashboardEditor({ card, publicUrl, baseUrl, stats }: Props) {
     </div>
   );
 }
-

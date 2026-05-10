@@ -1,5 +1,6 @@
 import { mkdir, readdir, unlink, writeFile } from "fs/promises";
 import path from "path";
+import sharp from "sharp";
 
 const MIME_TO_EXT: Record<string, "png" | "jpg" | "webp"> = {
   "image/png": "png",
@@ -56,7 +57,7 @@ export async function saveLogo(userId: string, file: File): Promise<string> {
   if (!sniffed || sniffed !== file.type) {
     throw new Error("unsupported mime");
   }
-  const ext = MIME_TO_EXT[sniffed];
+  const encoded = await sharp(buffer).rotate().webp({ quality: 80 }).toBuffer();
 
   const userDir = path.join(getUploadDir(), userId);
   await mkdir(userDir, { recursive: true });
@@ -73,8 +74,8 @@ export async function saveLogo(userId: string, file: File): Promise<string> {
     // dir 未存在等は mkdir で作ったので通常無視可能
   }
 
-  const fileName = `logo.${ext}`;
-  await writeFile(path.join(userDir, fileName), buffer);
+  const fileName = "logo.webp";
+  await writeFile(path.join(userDir, fileName), encoded);
 
-  return `/uploads/${userId}/${fileName}`;
+  return fileName;
 }

@@ -15,8 +15,6 @@ type Props = {
   onClose: () => void;
 };
 
-type Token = { token: string; disabled: boolean; label: string | null };
-
 export function ExchangeQuickDialog({ baseUrl, handle, isPrivate, open, onClose }: Props) {
   const toast = useToast();
   const [activeToken, setActiveToken] = useState<string | null>(null);
@@ -37,15 +35,6 @@ export function ExchangeQuickDialog({ baseUrl, handle, isPrivate, open, onClose 
     setStatusLine("プライバシーモード: 交換トークンを準備中...");
     void (async () => {
       try {
-        const res = await fetch("/api/tokens", { cache: "no-store" });
-        const data = (await res.json().catch(() => ({}))) as { tokens?: Token[] };
-        const found = (data.tokens ?? []).find((t) => !t.disabled);
-        if (found) {
-          setActiveToken(found.token);
-          setActiveLabel(found.label);
-          setStatusLine(`プライバシーモード ON: 「${found.label || "(ラベルなし)"}」 を使用中`);
-          return;
-        }
         const issued = await fetch("/api/tokens", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

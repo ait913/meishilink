@@ -1,8 +1,20 @@
-
+import { auth } from "@/auth";
 import { isReservedHandle, isValidHandle, normalizeHandle } from "@/lib/handle";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
 
-export async function GET(req: Request): Promise<Response> {  const url = new URL(req.url);
+export async function GET(req: Request): Promise<Response> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) {
+    return Response.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  if (!rateLimit(`handle-check:${userId}`, { limit: 30, windowMs: 60_000 })) {
+    return Response.json({ error: "too many requests" }, { status: 429 });
+  }
+
+  const url = new URL(req.url);
   const input = url.searchParams.get("h");
   if (!input) {
     return Response.json({ error: "missing h" }, { status: 400 });
@@ -54,4 +66,3 @@ export async function GET(req: Request): Promise<Response> {  const url = new UR
     available: !existing,
   });
 }
-

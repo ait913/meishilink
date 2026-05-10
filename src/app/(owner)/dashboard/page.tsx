@@ -60,7 +60,7 @@ export default async function DashboardPage() {
         card={{
           ...card,
           fullName: getDisplayName(card) || card.handle,
-          logoPath: card.logoPath,
+          logoUrl: card.logoPath ? `/u/${card.handle}/logo?v=${card.updatedAt.getTime()}` : null,
           snsLinks: parseSnsLinks(card.snsLinks),
         }}
         publicUrl={publicUrl}

@@ -1,10 +1,14 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 import { prisma } from "@/lib/prisma";
 
 /** URL-safe 32 字程度のトークンを生成 */
 export function generateTokenString(): string {
   return randomBytes(24).toString("base64url");
+}
+
+export function hashToken(plain: string): string {
+  return createHash("sha256").update(plain).digest("hex");
 }
 
 /**
@@ -23,8 +27,9 @@ export async function resolvePublicCard(handle: string, token?: string | null) {
 
   if (!token) return null;
 
+  const tokenHash = hashToken(token);
   const exchange = await prisma.exchangeToken.findUnique({
-    where: { token },
+    where: { tokenHash },
     select: { id: true, cardId: true, disabled: true, expiresAt: true },
   });
   if (!exchange) return null;
