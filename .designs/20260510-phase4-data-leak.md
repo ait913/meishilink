@@ -120,8 +120,19 @@ export async function GET(
 ```
 
 - `params.handle` を `normalizeHandle` し、無効なら 404。
-- `URL.searchParams.get("t")` を取り、`resolvePublicCard(normalized, token)` で card を取得。null なら 404。
-- card の owner userId と `card.logoPath` (= ファイル名 `logo.webp` または null) を取り出す。
+- `URL.searchParams.get("t")` を取り出す (token は後段で使う)。
+- **認可順序** (下記のいずれかを満たせば配信。すべて外れたら 404):
+  1. **handle で card を引く** (`prisma.card.findUnique({ where: { handle } })`)。null / `isPublished=false` なら 404 で即終了。
+  2. **public card** (`card.isPrivate === false`) → 認可不要、200 + `Cache-Control: public, max-age=3600, immutable`
+  3. **private card かつ owner bypass**:
+     - `auth()` でセッションを取得し、`session?.user?.id === card.userId` なら token なしでも 200 + `Cache-Control: private, no-store, no-cache, must-revalidate`
+     - 理由: owner が dashboard / print preview で自分のロゴを見るには必須。token を持たないため、owner bypass がないと 404 になり UX が壊れる
+     - CDN に乗せないため Cache-Control は public 経路と分け、必ず `private, no-store` 系で固定
+  4. **private card かつ token 経路**:
+     - 上記 owner bypass が false の場合、`token` クエリ必須。`resolvePublicCard(normalized, token)` で照合し、null なら 404
+     - 通れば 200 + `Cache-Control: private, no-store, no-cache, must-revalidate`
+  5. 上記いずれにも該当しなければ 404
+- 認可後、card の owner userId と `card.logoPath` (= ファイル名 `logo.webp` または null) を取り出す。
 - `card.logoPath` が null/空なら 404。
 - ファイル実体を `path.join(getUploadDir(), card.userId, card.logoPath)` で読む (path traversal は logoPath が `logo.webp` 固定なので発生しない。defensive に `/^logo\.(webp|png|jpg|jpeg)$/` で validate して escape)。
 - 読めれば下記レスポンス:
@@ -138,15 +149,20 @@ X-Content-Type-Options: nosniff
 
 #### 挙動仕様
 
-- public card (`isPrivate=false`) のロゴを GET → 200 + バイナリ
+- public card (`isPrivate=false`) のロゴを GET → 200 + バイナリ + `Cache-Control: public, max-age=3600`
 - public card で handle 末尾大文字 (`/u/Foo/logo`) → `permanentRedirect` で正規化先に飛ばす (page.tsx と同じパターン)
-- private card で `?t=<valid token>` → 200 + `Cache-Control: private, no-store`
-- private card で token なし → 404
-- private card で `?t=<wrong>` → 404
-- private card で `?t=<expired>` → 404
-- private card で `?t=<disabled>` → 404
+- private card で **owner session あり、token なし** → 200 + `Cache-Control: private, no-store` (owner bypass)
+- private card で **owner session あり + valid token** → 200 (owner bypass で先に通る。token 経路は実質スキップされるが結果は同じ 200 + `private, no-store`)
+- private card で **owner session あり + invalid token** → 200 (owner bypass が先に通る。invalid token は無視される)
+- private card で **別 user の session あり、token なし** → 404 (owner 一致せず、token もないため)
+- private card で **別 user の session あり + valid token** → 200 (owner bypass は false だが token 経路で通る)
+- private card で **未ログイン + valid token** → 200 + `Cache-Control: private, no-store`
+- private card で **未ログイン + token なし** → 404
+- private card で `?t=<wrong>` (owner でない) → 404
+- private card で `?t=<expired>` (owner でない) → 404
+- private card で `?t=<disabled>` (owner でない) → 404
 - 存在しない handle → 404
-- 存在する handle だが `isPublished=false` → 404
+- 存在する handle だが `isPublished=false` → 404 (owner であっても 404。未公開カードはプレビュー対象外)
 - card.logoPath が null → 404
 - ファイル実体が消えている (storage 削除等) → 404
 - 旧 URL `/uploads/<userId>/logo.png` → route 削除済なので **404** (Next.js のデフォルト)
@@ -157,6 +173,9 @@ X-Content-Type-Options: nosniff
 - **(b) handle ではなく cardId で配信** (`/u/<cardId>/logo`): handle と cardId のどちらでも認可できるが、cardId は internal な ID で URL に出すと安定リンク前提になりリファクタしづらい。handle ベースが自然。
 - **(c) signed URL (HMAC + expiry)**: CDN 配信前提なら有効だが、Coolify standalone で sharp 済バイナリを node から直接出すだけなので過剰設計。
 - **(d) base64 を DB に格納し API で返す**: SQLite に画像を入れるとレプリケーション/バックアップが重くなる。filesystem のままで十分。
+- **(e) owner bypass を入れない**: dashboard / print preview で owner 自身がロゴを見られなくなり、UX が退行 (token を発行しないと自分のカードのロゴすら見えない)。不採用。
+- **(f) owner にも自分の token を発行させて URL に付与**: 自分のロゴを見るためだけに token 発行を強制するのは明らかに過剰。不採用。
+- **(g) dashboard だけ `/uploads/<userId>/...` で raw file を読む**: 配信経路が二重化し、認可境界が曖昧化 (公開経路と内部経路の二系統メンテが必要)。`/u/<handle>/logo` 一本に owner bypass を持たせる方がシンプル。不採用。
 
 ---
 
@@ -588,9 +607,12 @@ WHERE "logoPath" IS NOT NULL AND "logoPath" != '';
 
 - `GET /uploads/...` が 404 (route 削除確認)
 - 公開 card で `/u/<handle>/logo` が 200 + `Cache-Control: public, max-age=3600`
-- private card で token なし → `/u/<handle>/logo` が 404
-- private card で valid token → 200 + `Cache-Control: private, no-store`
+- private card で token なし (未ログイン) → `/u/<handle>/logo` が 404
+- private card で valid token (未ログイン) → 200 + `Cache-Control: private, no-store`
 - 同じ token を **disabled=true** にしてから `/u/<handle>/logo?t=...` → 404
+- private card の **owner が session ありで token なし**アクセス → 200 + `Cache-Control: private, no-store` (owner bypass)
+- **別 user が session ありで token なし**アクセス → 404 (owner 一致せず、token もないため)
+- **別 user が session あり + valid token** でアクセス → 200 (owner bypass は false だが token 経路で通る)
 - DB で `SELECT * FROM ExchangeToken` しても `token` カラムが存在せず `tokenHash` のみ
 - DB で `SELECT * FROM Account` しても `refresh_token` / `access_token` / `id_token` カラムが存在しない
 - Google 新規ログイン後、Account row のトークン系カラムが NULL (= スキーマから消えている)
@@ -636,3 +658,6 @@ WHERE "logoPath" IS NOT NULL AND "logoPath" != '';
 8. **handle-check に CAPTCHA**: UX 悪化、外部依存追加。認証 + rate limit で十分。
 9. **rate-limit を Redis 化**: Coolify standalone 単一 instance 前提。Phase 5 で検討。
 10. **client-side EXIF 除去**: 信頼境界が逆。サーバ側で必ずやる。
+11. **logo route の owner bypass を入れない**: dashboard / print preview で owner 自身のロゴが 404。UX 退行。owner bypass を採用。
+12. **owner にも自分の token を発行させて URL に付与**: 自分のロゴを見るのに token 発行は明らかに過剰。不採用。
+13. **dashboard だけ `/uploads/<userId>/...` で raw file を読む**: 配信経路が二重化、セキュリティ境界が曖昧化。`/u/<handle>/logo` 一本に owner bypass を持たせる方が安全でシンプル。
